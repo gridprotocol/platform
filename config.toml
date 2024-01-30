@@ -1,0 +1,8 @@
+[Http]
+Listen = "localhost:12346"
+
+[Local]
+DBPath = "./testdb"
+
+[Remote]
+Wallet = "0x123456"

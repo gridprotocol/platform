@@ -1,10 +1,13 @@
 package routes
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/rockiecn/platform/lib/config"
+	"github.com/rockiecn/platform/lib/kv"
+	"github.com/rockiecn/platform/lib/logs"
 )
+
+var logger = logs.Logger("local")
 
 type Routes struct {
 	*gin.Engine
@@ -24,6 +27,14 @@ type OrderInfo struct {
 	Price    string `json:"price"`
 }
 
+type CPInfo struct {
+	Addr  string `json:"address"`
+	Name  string `json:"name"`
+	Entr  string `json:"entrance"`
+	Res   string `json:"resource"`
+	Price string `json:"price"`
+}
+
 func init() {
 
 }
@@ -39,58 +50,31 @@ func RegistRoutes() Routes {
 		router,
 	}
 
-	// for test
-	r.registRootRoute()
-
-	// for functions
-	r.registListRoute()
-	r.registOrderRoute()
+	// register all routes
+	r.registerAll()
 
 	return r
 }
 
-// welcome
-func (r Routes) registRootRoute() {
-	r.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "Welcome Server")
-	})
-}
-
-// gateway list, list all nodes' gateway info
-func (r Routes) registListRoute() {
-
-	// read nodes from config
-	nodes := ReadList()
-
-	// response node list
-	r.GET("/list", func(c *gin.Context) {
-		c.JSON(http.StatusOK, nodes)
-	})
-}
-
-// order operation in platform
-func (r Routes) registOrderRoute() {
-	or := OrderInfo{ID: "123", Resource: "res", Duration: "dur", Price: "100"}
-	// response order
-	r.GET("/order", func(c *gin.Context) {
-		c.JSON(http.StatusOK, or)
-	})
-}
-
-func cors() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		method := c.Request.Method
-		origin := c.Request.Header.Get("Origin")
-		if origin != "" {
-			c.Header("Access-Control-Allow-Origin", "*")
-			c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
-			c.Header("Access-Control-Allow-Headers", "Content-Type,AccessToken,X-CSRF-Token, Authorization, Token")
-			c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type")
-			c.Header("Access-Control-Allow-Credentials", "true")
-		}
-		if method == "OPTIONS" {
-			c.AbortWithStatus(http.StatusNoContent)
-		}
-		c.Next()
+// create local db, register all routes
+func (r Routes) registerAll() {
+	// create kv db
+	db, err := kv.NewDatabase(config.GetConfig().Local.DBPath)
+	if err != nil {
+		logger.Error("Fail to open up the database, err: ", err)
+		panic(err)
 	}
+
+	// handler core
+	hc := handlerCore{
+		DB: db,
+	}
+
+	// for test
+	r.GET("/", hc.RootHandler)
+
+	// for functions
+	r.GET("/list", hc.ListHandler)
+	r.GET("/order", hc.OrderHandler)
+	r.GET("/login", hc.LoginHandler)
 }

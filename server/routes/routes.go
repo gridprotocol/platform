@@ -20,19 +20,38 @@ type NodeInfo struct {
 	Price    string `json:"price"`
 }
 
-type OrderInfo struct {
-	ID       string `json:"id"`
-	Resource string `json:"resource"`
-	Duration string `json:"duration"`
-	Price    string `json:"price"`
-}
+// type OrderInfo struct {
+// 	ID       string `json:"id"`
+// 	Resource string `json:"resource"`
+// 	Duration string `json:"duration"`
+// 	Price    string `json:"price"`
+// }
 
 type CPInfo struct {
-	Addr  string `json:"address"`
-	Name  string `json:"name"`
-	Entr  string `json:"entrance"`
-	Res   string `json:"resource"`
-	Price string `json:"price"`
+	Name     string `json:"name"` // provider name
+	NumCPU   string `json:"numCPU"`
+	PriCPU   string `json:"priCPU"`
+	NumGPU   string `json:"numGPU"`
+	PriGPU   string `json:"priGPU"`
+	NumStore string `json:"numStore"`
+	PriStore string `json:"priStore"`
+	NumMem   string `json:"numMem"`
+	PriMem   string `json:"priMem"`
+}
+
+type OrderInfo struct {
+	ID       string `json:"id"`      // order id for this user
+	Addr     string `json:"address"` // user address
+	Name     string `json:"name"`    // provider name
+	NumCPU   string `json:"numCPU"`
+	PriCPU   string `json:"priCPU"`
+	NumGPU   string `json:"numGPU"`
+	PriGPU   string `json:"priGPU"`
+	NumStore string `json:"numStore"`
+	PriStore string `json:"priStore"`
+	NumMem   string `json:"numMem"`
+	PriMem   string `json:"priMem"`
+	Dur      string `json:"duration"`
 }
 
 func init() {
@@ -58,8 +77,15 @@ func RegistRoutes() Routes {
 
 // create local db, register all routes
 func (r Routes) registerAll() {
-	// create kv db
-	db, err := kv.NewDatabase(config.GetConfig().Local.DBPath)
+	// create cp db
+	cpdb, err := kv.NewDatabase(config.GetConfig().Local.CP_DB_Path)
+	if err != nil {
+		logger.Error("Fail to open up the database, err: ", err)
+		panic(err)
+	}
+
+	// create order db
+	orderdb, err := kv.NewDatabase(config.GetConfig().Local.Order_DB_Path)
 	if err != nil {
 		logger.Error("Fail to open up the database, err: ", err)
 		panic(err)
@@ -67,14 +93,16 @@ func (r Routes) registerAll() {
 
 	// handler core
 	hc := handlerCore{
-		DB: db,
+		CPDB:    cpdb,
+		OrderDB: orderdb,
 	}
 
 	// for test
 	r.GET("/", hc.RootHandler)
 
 	// for functions
-	r.GET("/list", hc.ListHandler)
-	r.GET("/order", hc.OrderHandler)
-	r.GET("/login", hc.LoginHandler)
+	r.POST("/logincp", hc.LoginCPHandler)
+	r.GET("/listcp", hc.ListCPHandler)
+	r.POST("/createorder", hc.CreateOrderHandler)
+	r.GET("/listorder", hc.ListOrderHandler)
 }

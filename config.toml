@@ -1,0 +1,9 @@
+[Http]
+Listen = "localhost:12346"
+
+[Local]
+CP_DB_Path = "./cp_db"
+Order_DB_Path ="./order_db"
+
+[Remote]
+Wallet = "0x123456"

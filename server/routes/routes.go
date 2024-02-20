@@ -1,10 +1,13 @@
 package routes
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/rockiecn/platform/lib/config"
+	"github.com/rockiecn/platform/lib/kv"
+	"github.com/rockiecn/platform/lib/logs"
 )
+
+var logger = logs.Logger("local")
 
 type Routes struct {
 	*gin.Engine
@@ -17,11 +20,38 @@ type NodeInfo struct {
 	Price    string `json:"price"`
 }
 
+// type OrderInfo struct {
+// 	ID       string `json:"id"`
+// 	Resource string `json:"resource"`
+// 	Duration string `json:"duration"`
+// 	Price    string `json:"price"`
+// }
+
+type CPInfo struct {
+	Name     string `json:"name"` // provider name
+	NumCPU   string `json:"numCPU"`
+	PriCPU   string `json:"priCPU"`
+	NumGPU   string `json:"numGPU"`
+	PriGPU   string `json:"priGPU"`
+	NumStore string `json:"numStore"`
+	PriStore string `json:"priStore"`
+	NumMem   string `json:"numMem"`
+	PriMem   string `json:"priMem"`
+}
+
 type OrderInfo struct {
-	ID       string `json:"id"`
-	Resource string `json:"resource"`
-	Duration string `json:"duration"`
-	Price    string `json:"price"`
+	ID       string `json:"id"`      // order id for this user
+	Addr     string `json:"address"` // user address
+	Name     string `json:"name"`    // provider name
+	NumCPU   string `json:"numCPU"`
+	PriCPU   string `json:"priCPU"`
+	NumGPU   string `json:"numGPU"`
+	PriGPU   string `json:"priGPU"`
+	NumStore string `json:"numStore"`
+	PriStore string `json:"priStore"`
+	NumMem   string `json:"numMem"`
+	PriMem   string `json:"priMem"`
+	Dur      string `json:"duration"`
 }
 
 func init() {
@@ -39,58 +69,40 @@ func RegistRoutes() Routes {
 		router,
 	}
 
-	// for test
-	r.registRootRoute()
-
-	// for functions
-	r.registListRoute()
-	r.registOrderRoute()
+	// register all routes
+	r.registerAll()
 
 	return r
 }
 
-// welcome
-func (r Routes) registRootRoute() {
-	r.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "Welcome Server")
-	})
-}
-
-// gateway list, list all nodes' gateway info
-func (r Routes) registListRoute() {
-
-	// read nodes from config
-	nodes := ReadList()
-
-	// response node list
-	r.GET("/list", func(c *gin.Context) {
-		c.JSON(http.StatusOK, nodes)
-	})
-}
-
-// order operation in platform
-func (r Routes) registOrderRoute() {
-	or := OrderInfo{ID: "123", Resource: "res", Duration: "dur", Price: "100"}
-	// response order
-	r.GET("/order", func(c *gin.Context) {
-		c.JSON(http.StatusOK, or)
-	})
-}
-
-func cors() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		method := c.Request.Method
-		origin := c.Request.Header.Get("Origin")
-		if origin != "" {
-			c.Header("Access-Control-Allow-Origin", "*")
-			c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
-			c.Header("Access-Control-Allow-Headers", "Content-Type,AccessToken,X-CSRF-Token, Authorization, Token")
-			c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type")
-			c.Header("Access-Control-Allow-Credentials", "true")
-		}
-		if method == "OPTIONS" {
-			c.AbortWithStatus(http.StatusNoContent)
-		}
-		c.Next()
+// create local db, register all routes
+func (r Routes) registerAll() {
+	// create cp db
+	cpdb, err := kv.NewDatabase(config.GetConfig().Local.CP_DB_Path)
+	if err != nil {
+		logger.Error("Fail to open up the database, err: ", err)
+		panic(err)
 	}
+
+	// create order db
+	orderdb, err := kv.NewDatabase(config.GetConfig().Local.Order_DB_Path)
+	if err != nil {
+		logger.Error("Fail to open up the database, err: ", err)
+		panic(err)
+	}
+
+	// handler core
+	hc := handlerCore{
+		CPDB:    cpdb,
+		OrderDB: orderdb,
+	}
+
+	// for test
+	r.GET("/", hc.RootHandler)
+
+	// for functions
+	r.POST("/logincp", hc.LoginCPHandler)
+	r.GET("/listcp", hc.ListCPHandler)
+	r.POST("/createorder", hc.CreateOrderHandler)
+	r.GET("/listorder", hc.ListOrderHandler)
 }

@@ -56,9 +56,14 @@ func (hc *handlerCore) ListCPHandler(c *gin.Context) {
 }
 
 // handler of cp login
-func (hc *handlerCore) LoginCPHandler(c *gin.Context) {
+func (hc *handlerCore) RegistCPHandler(c *gin.Context) {
 
+	// provider name
 	name := c.PostForm("name")
+	// provider wallet address
+	address := c.PostForm("address")
+
+	endpoint := c.PostForm("endpoint")
 
 	numCPU := c.PostForm("numCPU")
 	priCPU := c.PostForm("priCPU")
@@ -75,6 +80,8 @@ func (hc *handlerCore) LoginCPHandler(c *gin.Context) {
 	//
 	info := CPInfo{
 		Name:     name,
+		Address:  address,
+		EndPoint: endpoint,
 		NumCPU:   numCPU,
 		PriCPU:   priCPU,
 		NumGPU:   numGPU,
@@ -91,8 +98,20 @@ func (hc *handlerCore) LoginCPHandler(c *gin.Context) {
 		panic(err)
 	}
 
-	// address as key, info as valude
-	hc.CPDB.Put([]byte(name), []byte(data))
+	b, err := hc.CPDB.Has([]byte(address))
+	if err != nil {
+		panic(err)
+	}
+	if b {
+		c.JSON(http.StatusOK, "cp already exist")
+		return
+	}
+
+	// wallet address as key, info as valude
+	err = hc.CPDB.Put([]byte(address), []byte(data))
+	if err != nil {
+		panic(err)
+	}
 
 	c.JSON(http.StatusOK, "login OK")
 }
@@ -101,10 +120,10 @@ func (hc *handlerCore) LoginCPHandler(c *gin.Context) {
 func (hc *handlerCore) CreateOrderHandler(c *gin.Context) {
 
 	// user address
-	addr := c.PostForm("address")
+	userAddr := c.PostForm("userAddress")
 
-	// provider name
-	name := c.PostForm("name")
+	// provider address
+	cpAddr := c.PostForm("cpAddress")
 
 	numCPU := c.PostForm("numCPU")
 	priCPU := c.PostForm("priCPU")
@@ -118,14 +137,47 @@ func (hc *handlerCore) CreateOrderHandler(c *gin.Context) {
 	numMem := c.PostForm("numMem")
 	priMem := c.PostForm("priMem")
 
+	// duration in month
 	dur := c.PostForm("duration")
 
-	// get order id for each user
-	orderID, err := hc.OrderDB.Get([]byte(addr))
+	// compute expire with duration and current time
+	expire, err := utils.DurToTS(dur)
+	if err != nil {
+		panic(err)
+	}
+
+	// read cp name from db with cp address
+
+	// check cp
+	b, err := hc.CPDB.Has([]byte(cpAddr))
+	if err != nil {
+		panic(err)
+	}
+	if !b {
+		c.JSON(http.StatusOK, "cp not found")
+		return
+	}
+	// read cp info
+	data, err := hc.CPDB.Get([]byte(cpAddr))
+	if err != nil {
+		panic(err)
+	}
+	// unmarshal data to CPInfo
+	cp := CPInfo{}
+	err = json.Unmarshal(data, &cp)
+	if err != nil {
+		panic(err)
+	}
+	// get cp name and endpoint
+	cpName := cp.Name
+	endPoint := cp.EndPoint
+
+	// get current order id for each user, used in new order
+	orderID, err := hc.OrderDB.Get([]byte(userAddr))
 	if err != nil {
 		// if no order id, init with 0
 		if err.Error() == "Key not found" {
-			err = hc.OrderDB.Put([]byte(addr), utils.IntToBytes(0))
+			err = hc.OrderDB.Put([]byte(userAddr), utils.IntToBytes(0))
 			if err != nil {
 				panic(err)
 			}
@@ -135,11 +187,13 @@ func (hc *handlerCore) CreateOrderHandler(c *gin.Context) {
 	}
 	fmt.Println("old order id:", utils.BytesToInt(orderID))
 
-	//
+	// construct new order info
 	info := OrderInfo{
-		ID:       fmt.Sprintf("%d", utils.BytesToInt(orderID)),
-		Addr:     addr,
-		Name:     name,
+		OrderID:  fmt.Sprintf("%d", utils.BytesToInt(orderID)),
+		UserAddr: userAddr,
+		CPAddr:   cpAddr,
+		CPName:   cpName,
+		EndPoint: endPoint,
 		NumCPU:   numCPU,
 		PriCPU:   priCPU,
 		NumGPU:   numGPU,
@@ -149,16 +203,17 @@ func (hc *handlerCore) CreateOrderHandler(c *gin.Context) {
 		NumMem:   numMem,
 		PriMem:   priMem,
 		Dur:      dur,
+		Expire:   expire,
 	}
 
-	// mashal into bytes
-	data, err := json.Marshal(info)
+	// mashal order info into bytes
+	data, err = json.Marshal(info)
 	if err != nil {
 		panic(err)
 	}
 
-	// 'address' _ 'order id' as order key
-	strKey := fmt.Sprintf("%s_%d", addr, utils.BytesToInt(orderID))
+	// 'user address' _ 'order id' as order key
+	strKey := fmt.Sprintf("%s_%d", userAddr, utils.BytesToInt(orderID))
 	fmt.Println("key:", strKey)
 
 	// put order info into db
@@ -169,8 +224,8 @@ func (hc *handlerCore) CreateOrderHandler(c *gin.Context) {
 	intID += 1
 	orderID = utils.IntToBytes(intID)
 	fmt.Println("new order id:", utils.BytesToInt(orderID))
-	// write new order id into db
-	err = hc.OrderDB.Put([]byte(addr), orderID)
+	// update order id into db
+	err = hc.OrderDB.Put([]byte(userAddr), orderID)
 	if err != nil {
 		panic(err)
 	}

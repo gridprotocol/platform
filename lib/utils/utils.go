@@ -3,6 +3,11 @@ package utils
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
+	"strconv"
+	"time"
+
+	"github.com/pkg/errors"
 )
 
 // IntToBytes 将int类型的数转化为字节并以小端存储
@@ -24,4 +29,32 @@ func BytesToInt(bytesArr []byte) int {
 	}
 
 	return intNum
+}
+
+// duration(month) to time stamp
+func DurToTS(month string) (string, error) {
+	// string to uint
+	m, err := strconv.ParseInt(month, 10, 64) // 第二个参数表示基数（这里是十进制），第三个参数表示目标类型的位数（这里是64位）
+	if err != nil {
+		return "", errors.Errorf("string to int64 error: %s", err)
+	}
+
+	fmt.Println("month:", m)
+
+	// get seconds
+	sec := m * 30 * 86400
+	fmt.Println("seconds:", sec)
+
+	// get current time stamp
+	now := time.Now().Unix()
+	fmt.Println("current timestamp:", now)
+
+	// get expire
+	expire := now + sec
+	fmt.Println("expire timestamp:", expire)
+
+	// int to string
+	expireS := fmt.Sprintf("%d", expire)
+
+	return expireS, nil
 }

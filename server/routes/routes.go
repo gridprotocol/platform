@@ -29,6 +29,8 @@ type NodeInfo struct {
 
 type CPInfo struct {
 	Name     string `json:"name"` // provider name
+	Address  string `json:"address"`
+	EndPoint string `json:"endpoint"`
 	NumCPU   string `json:"numCPU"`
 	PriCPU   string `json:"priCPU"`
 	NumGPU   string `json:"numGPU"`
@@ -40,9 +42,11 @@ type CPInfo struct {
 }
 
 type OrderInfo struct {
-	ID       string `json:"id"`      // order id for this user
-	Addr     string `json:"address"` // user address
-	Name     string `json:"name"`    // provider name
+	OrderID  string `json:"orderID"`     // order id for this user
+	UserAddr string `json:"userAddress"` // user address
+	CPAddr   string `json:"cpAddress"`   // provider address
+	CPName   string `json:"cpName"`      // provider name
+	EndPoint string `json:"endpoint"`    // provider endpoint
 	NumCPU   string `json:"numCPU"`
 	PriCPU   string `json:"priCPU"`
 	NumGPU   string `json:"numGPU"`
@@ -52,6 +56,7 @@ type OrderInfo struct {
 	NumMem   string `json:"numMem"`
 	PriMem   string `json:"priMem"`
 	Dur      string `json:"duration"`
+	Expire   string `json:"expire"`
 }
 
 func init() {
@@ -101,7 +106,7 @@ func (r Routes) registerAll() {
 	r.GET("/", hc.RootHandler)
 
 	// for functions
-	r.POST("/logincp", hc.LoginCPHandler)
+	r.POST("/registcp", hc.RegistCPHandler)
 	r.GET("/listcp", hc.ListCPHandler)
 	r.POST("/createorder", hc.CreateOrderHandler)
 	r.GET("/listorder", hc.ListOrderHandler)

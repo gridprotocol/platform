@@ -113,7 +113,7 @@ func (hc *handlerCore) RegistCPHandler(c *gin.Context) {
 		panic(err)
 	}
 
-	c.JSON(http.StatusOK, "login OK")
+	c.JSON(http.StatusOK, "regist OK")
 }
 
 // handler of create order
@@ -230,7 +230,16 @@ func (hc *handlerCore) CreateOrderHandler(c *gin.Context) {
 		panic(err)
 	}
 
-	c.JSON(http.StatusOK, "create order OK")
+	// calc value of order
+	v, err := CalcValue(&info)
+	if err != nil {
+		panic(err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"to":    "0x1234",
+		"value": v,
+	})
 }
 
 // handler for get order list
@@ -293,4 +302,50 @@ func cors() gin.HandlerFunc {
 		}
 		c.Next()
 	}
+}
+
+// calc value of an order
+func CalcValue(o *OrderInfo) (uint64, error) {
+	nCPU, err := utils.StringToUint64(o.NumCPU)
+	if err != nil {
+		return 0, err
+	}
+	pCPU, err := utils.StringToUint64(o.PriCPU)
+	if err != nil {
+		return 0, err
+	}
+	nGPU, err := utils.StringToUint64(o.NumGPU)
+	if err != nil {
+		return 0, err
+	}
+	pGPU, err := utils.StringToUint64(o.PriGPU)
+	if err != nil {
+		return 0, err
+	}
+	nMem, err := utils.StringToUint64(o.NumMem)
+	if err != nil {
+		return 0, err
+	}
+	pMem, err := utils.StringToUint64(o.PriMem)
+	if err != nil {
+		return 0, err
+	}
+	nStor, err := utils.StringToUint64(o.NumStore)
+	if err != nil {
+		return 0, err
+	}
+	pStor, err := utils.StringToUint64(o.PriStore)
+	if err != nil {
+		return 0, err
+	}
+
+	dur, err := utils.StringToUint64(o.Dur)
+	if err != nil {
+		return 0, err
+	}
+
+	// get value
+	value := (nCPU*pCPU + nGPU*pGPU + nMem*pMem + nStor*pStor) * dur
+
+	return value, nil
 }

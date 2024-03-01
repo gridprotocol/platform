@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rockiecn/platform/lib/kv"
@@ -77,6 +78,32 @@ func (hc *handlerCore) RegistCPHandler(c *gin.Context) {
 	numMem := c.PostForm("numMem")
 	priMem := c.PostForm("priMem")
 
+	// check input
+	if !isNumber(priCPU) {
+		c.JSON(http.StatusBadRequest, "price must be number")
+		return
+	}
+	if !isNumber(priGPU) {
+		c.JSON(http.StatusBadRequest, "price must be number")
+		return
+	}
+	if !isNumber(priMem) {
+		c.JSON(http.StatusBadRequest, "price must be number")
+		return
+	}
+	if !isNumber(priStore) {
+		c.JSON(http.StatusBadRequest, "price must be number")
+		return
+	}
+	if !isNumber(numStore) {
+		c.JSON(http.StatusBadRequest, "store space must be number")
+		return
+	}
+	if !isNumber(numMem) {
+		c.JSON(http.StatusBadRequest, "memory space must be number")
+		return
+	}
+
 	//
 	info := CPInfo{
 		Name:     name,
@@ -139,6 +166,32 @@ func (hc *handlerCore) CreateOrderHandler(c *gin.Context) {
 
 	// duration in month
 	dur := c.PostForm("duration")
+
+	// check input
+	if !isNumber(priCPU) {
+		c.JSON(http.StatusBadRequest, "price must be number")
+		return
+	}
+	if !isNumber(priGPU) {
+		c.JSON(http.StatusBadRequest, "price must be number")
+		return
+	}
+	if !isNumber(priMem) {
+		c.JSON(http.StatusBadRequest, "price must be number")
+		return
+	}
+	if !isNumber(priStore) {
+		c.JSON(http.StatusBadRequest, "price must be number")
+		return
+	}
+	if !isNumber(numStore) {
+		c.JSON(http.StatusBadRequest, "store space must be number")
+		return
+	}
+	if !isNumber(numMem) {
+		c.JSON(http.StatusBadRequest, "memory space must be number")
+		return
+	}
 
 	// compute expire with duration and current time
 	expire, err := utils.DurToTS(dur)
@@ -314,6 +367,7 @@ func CalcValue(o *OrderInfo) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	nGPU, err := utils.StringToUint64(o.NumGPU)
 	if err != nil {
 		return 0, err
@@ -322,18 +376,26 @@ func CalcValue(o *OrderInfo) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
+
+	// T
 	nMem, err := utils.StringToUint64(o.NumMem)
 	if err != nil {
 		return 0, err
 	}
+	// T to byte
+	nMem = nMem * 1024 * 1024 * 1024 * 1024
 	pMem, err := utils.StringToUint64(o.PriMem)
 	if err != nil {
 		return 0, err
 	}
+
+	// G
 	nStor, err := utils.StringToUint64(o.NumStore)
 	if err != nil {
 		return 0, err
 	}
+	// G to byte
+	nStor = nStor * 1024 * 1024 * 1024
 	pStor, err := utils.StringToUint64(o.PriStore)
 	if err != nil {
 		return 0, err
@@ -348,4 +410,11 @@ func CalcValue(o *OrderInfo) (uint64, error) {
 	value := (nCPU*pCPU + nGPU*pGPU + nMem*pMem + nStor*pStor) * dur
 
 	return value, nil
+}
+
+// check number
+func isNumber(s string) bool {
+	pattern := `^[0-9]+(\.[0-9]+)?$`
+	matched, _ := regexp.MatchString(pattern, s)
+	return matched
 }

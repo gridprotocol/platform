@@ -57,6 +57,7 @@ type OrderInfo struct {
 	PriMem   string `json:"priMem"`
 	Dur      string `json:"duration"`
 	Expire   string `json:"expire"`
+	Settled  bool   `json:"settled"`
 }
 
 func init() {
@@ -111,6 +112,4 @@ func (r Routes) registerAll() {
 	r.POST("/createorder", hc.CreateOrderHandler)
 	// list orders for user
 	r.GET("/listorder", hc.ListOrderHandler)
-	// list orders for cp
-	r.GET("/listcporder", hc.ListCPOrderHandler)
 }

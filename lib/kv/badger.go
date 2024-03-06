@@ -15,7 +15,8 @@ type Database struct {
 func NewDB(path string) *Database {
 	return &Database{
 		Path: path,
-		DB:   nil}
+		DB:   nil,
+	}
 }
 
 // open db

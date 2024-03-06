@@ -2,8 +2,7 @@
 Listen = "localhost:12346"
 
 [Local]
-CP_DB_Path = "./cp_db"
-Order_DB_Path ="./order_db"
+DB_Path = "./kv"
 
 [Remote]
 Wallet = "0x123456"

@@ -39,19 +39,19 @@ func DurToTS(month string) (string, error) {
 		return "", errors.Errorf("string to int64 error: %s", err)
 	}
 
-	fmt.Println("month:", m)
+	//fmt.Println("month:", m)
 
 	// get seconds
 	sec := m * 30 * 86400
-	fmt.Println("seconds:", sec)
+	//fmt.Println("seconds:", sec)
 
 	// get current time stamp
 	now := time.Now().Unix()
-	fmt.Println("current timestamp:", now)
+	//fmt.Println("current timestamp:", now)
 
 	// get expire
 	expire := now + sec
-	fmt.Println("expire timestamp:", expire)
+	//fmt.Println("expire timestamp:", expire)
 
 	// int to string
 	expireS := fmt.Sprintf("%d", expire)

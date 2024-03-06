@@ -19,8 +19,7 @@ type GatewayConfig struct {
 }
 
 type Local struct {
-	CP_DB_Path    string
-	Order_DB_Path string
+	DB_Path string
 }
 
 type Remote struct {
@@ -63,8 +62,7 @@ func requiredFieldsAreGiven(metaData toml.MetaData) bool {
 
 		{"Http", "Listen"},
 
-		{"Local", "CP_DB_Path"},
-		{"Local", "Order_DB_Path"},
+		{"Local", "DB_Path"},
 
 		{"Remote", "Wallet"},
 	}

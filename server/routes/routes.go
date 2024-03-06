@@ -5,7 +5,7 @@ import (
 	"github.com/rockiecn/platform/lib/logs"
 )
 
-var logger = logs.Logger("local")
+var logger = logs.Logger("routes")
 
 type Routes struct {
 	*gin.Engine
@@ -84,8 +84,7 @@ func (r Routes) registerAll() {
 
 	// new handler core
 	hc := HandlerCore{
-		CPDB:    nil,
-		OrderDB: nil,
+		LocalDB: nil,
 	}
 	// init db for hanlder core
 	hc.InitDB()

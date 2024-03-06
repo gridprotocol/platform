@@ -7,25 +7,36 @@ import (
 )
 
 type Database struct {
-	db *badger.DB
+	Path string
+	DB   *badger.DB
 }
 
-func NewDatabase(path string) (*Database, error) {
-	opts := badger.DefaultOptions(path)
+// new db with path
+func NewDB(path string) *Database {
+	return &Database{
+		Path: path,
+		DB:   nil}
+}
+
+// open db
+func (d *Database) Open() error {
+	opts := badger.DefaultOptions(d.Path)
 	db, err := badger.Open(opts)
 	if err != nil {
-		return nil, err
+		return err
 	}
+	d.DB = db
 
-	return &Database{db: db}, nil
+	return nil
 }
 
+// close db
 func (d *Database) Close() error {
-	return d.db.Close()
+	return d.DB.Close()
 }
 
 func (d *Database) MultiPut(keys [][]byte, values [][]byte) error {
-	return d.db.Update(func(txn *badger.Txn) error {
+	return d.DB.Update(func(txn *badger.Txn) error {
 		var err error
 		for i := 0; i < len(keys); i++ {
 			if err = txn.Set(keys[i], values[i]); err != nil {
@@ -37,14 +48,14 @@ func (d *Database) MultiPut(keys [][]byte, values [][]byte) error {
 }
 
 func (d *Database) Put(key []byte, value []byte) error {
-	return d.db.Update(func(txn *badger.Txn) error {
+	return d.DB.Update(func(txn *badger.Txn) error {
 		err := txn.Set(key, value)
 		return err
 	})
 }
 
 func (d *Database) Delete(key []byte) error {
-	return d.db.Update(func(txn *badger.Txn) error {
+	return d.DB.Update(func(txn *badger.Txn) error {
 		err := txn.Delete(key)
 		return err
 	})
@@ -52,7 +63,7 @@ func (d *Database) Delete(key []byte) error {
 
 func (d *Database) Get(key []byte) ([]byte, error) {
 	var result []byte
-	err := d.db.View(func(txn *badger.Txn) error {
+	err := d.DB.View(func(txn *badger.Txn) error {
 		item, err := txn.Get(key)
 		if err != nil {
 			return err
@@ -71,7 +82,7 @@ func (d *Database) Get(key []byte) ([]byte, error) {
 
 func (d *Database) Has(key []byte) (bool, error) {
 	has := false
-	err := d.db.View(func(txn *badger.Txn) error {
+	err := d.DB.View(func(txn *badger.Txn) error {
 		_, err := txn.Get(key)
 		if err != nil {
 			if err != badger.ErrKeyNotFound {
@@ -86,7 +97,7 @@ func (d *Database) Has(key []byte) (bool, error) {
 }
 
 func (d *Database) Update(key []byte, updateFunc func(value []byte) ([]byte, error)) error {
-	return d.db.Update(func(txn *badger.Txn) error {
+	return d.DB.Update(func(txn *badger.Txn) error {
 		item, err := txn.Get(key)
 		if err != nil {
 			return err
@@ -111,7 +122,7 @@ func (d *Database) Update(key []byte, updateFunc func(value []byte) ([]byte, err
 func (d *Database) GetAllValues() map[string]string {
 	res := make(map[string]string)
 
-	err := d.db.View(func(txn *badger.Txn) error {
+	err := d.DB.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
 		opts.PrefetchSize = 10
 		it := txn.NewIterator(opts)

@@ -16,8 +16,12 @@ type ServerOption struct {
 	Endpoint string
 }
 
+type PFServer struct {
+	HttpServer *http.Server
+}
+
 // create new platform server with kv db
-func NewServer(opt ServerOption) *http.Server {
+func NewServer(opt ServerOption) *PFServer {
 
 	log.Println("Server Start")
 
@@ -27,15 +31,26 @@ func NewServer(opt ServerOption) *http.Server {
 		log.Fatalf("failed to init the config: %v", err)
 	}
 
-	// gin engine
-	gin.SetMode(gin.ReleaseMode)
-	// register routes
-	router := routes.RegistRoutes()
-	// http server
-	svr := &http.Server{
+	// make http server
+	httSvr := &http.Server{
 		Addr:    opt.Endpoint,
-		Handler: router,
+		Handler: routes.Routes{},
 	}
 
-	return svr
+	// make platform server
+	pfServer := PFServer{
+		HttpServer: httSvr,
+	}
+	return &pfServer
+}
+
+// register routes for http server
+func (s *PFServer) RegisterRoutes() {
+	// gin engine
+	gin.SetMode(gin.ReleaseMode)
+
+	// register routes
+	router := routes.RegistRoutes()
+
+	s.HttpServer.Handler = router
 }

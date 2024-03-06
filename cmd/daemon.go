@@ -46,12 +46,14 @@ var runCmd = &cli.Command{
 			Endpoint: endPoint,
 		}
 
-		// create server with routes
+		// create server
 		svr := server.NewServer(opts)
+		// register routes for server
+		svr.RegisterRoutes()
 
 		// start server
 		go func() {
-			if err := svr.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			if err := svr.HttpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 				log.Fatalf("listen: %s\n", err)
 			}
 		}()
@@ -64,7 +66,7 @@ var runCmd = &cli.Command{
 
 		cctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		if err := svr.Shutdown(cctx); err != nil {
+		if err := svr.HttpServer.Shutdown(cctx); err != nil {
 			log.Fatal("Server forced to shutdown: ", err)
 		}
 

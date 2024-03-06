@@ -2,8 +2,6 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rockiecn/platform/lib/config"
-	"github.com/rockiecn/platform/lib/kv"
 	"github.com/rockiecn/platform/lib/logs"
 )
 
@@ -83,25 +81,14 @@ func RegistRoutes() Routes {
 
 // create local db, register all routes
 func (r Routes) registerAll() {
-	// create cp db
-	cpdb, err := kv.NewDatabase(config.GetConfig().Local.CP_DB_Path)
-	if err != nil {
-		logger.Error("Fail to open up the database, err: ", err)
-		panic(err)
-	}
 
-	// create order db
-	orderdb, err := kv.NewDatabase(config.GetConfig().Local.Order_DB_Path)
-	if err != nil {
-		logger.Error("Fail to open up the database, err: ", err)
-		panic(err)
+	// new handler core
+	hc := HandlerCore{
+		CPDB:    nil,
+		OrderDB: nil,
 	}
-
-	// handler core
-	hc := handlerCore{
-		CPDB:    cpdb,
-		OrderDB: orderdb,
-	}
+	// init db for hanlder core
+	hc.InitDB()
 
 	// for test
 	r.GET("/", hc.RootHandler)

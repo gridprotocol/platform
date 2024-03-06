@@ -6,58 +6,44 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/dgraph-io/badger/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/rockiecn/platform/lib/config"
 	"github.com/rockiecn/platform/lib/kv"
 	"github.com/rockiecn/platform/lib/utils"
 )
 
-type handlerCore struct {
+type HandlerCore struct {
 	CPDB    *kv.Database
 	OrderDB *kv.Database
 }
 
+// init db for handler core
+func (hc *HandlerCore) InitDB() {
+	// get db path from config
+	cpdb_path := config.GetConfig().Local.CP_DB_Path
+	orderdb_path := config.GetConfig().Local.Order_DB_Path
+	// create cp db
+	hc.CPDB = kv.NewDB(cpdb_path)
+	// create order db
+	hc.OrderDB = kv.NewDB(orderdb_path)
+}
+
 // handler of welcom
-func (hc *handlerCore) RootHandler(c *gin.Context) {
+func (hc *HandlerCore) RootHandler(c *gin.Context) {
 	c.String(http.StatusOK, "Welcome Server")
 }
 
-// handler for list cp nodes
-func (hc *handlerCore) ListCPHandler(c *gin.Context) {
-
-	// // read db
-	// data, err := hc.DB.Get([]byte("0x0090675FD3ef5031d7719A758163E73Fd58AF1EB"))
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// logger.Info("data from db:", string(data))
-
-	// // unmarshal
-	// cpInfo := &CPInfo{}
-	// err = json.Unmarshal(data, cpInfo)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// logger.Info("unmarshaled cp info:", cpInfo)
-
-	// all cp info to response
-	cps := make([]CPInfo, 0, 100)
-
-	allValue := hc.CPDB.GetAllValues()
-	for _, v := range allValue {
-		cp := &CPInfo{}
-		err := json.Unmarshal([]byte(v), cp)
-		if err != nil {
-			panic(err)
-		}
-		cps = append(cps, *cp)
-	}
-
-	// response node list
-	c.JSON(http.StatusOK, cps)
-}
-
 // handler of cp login
-func (hc *handlerCore) RegistCPHandler(c *gin.Context) {
+func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
+
+	// open db
+	err := hc.CPDB.Open()
+	if err != nil {
+		logger.Error("Fail to open up the database, err: ", err)
+		panic(err)
+	}
+	defer hc.CPDB.Close()
 
 	// provider name
 	name := c.PostForm("name")
@@ -125,7 +111,11 @@ func (hc *handlerCore) RegistCPHandler(c *gin.Context) {
 		panic(err)
 	}
 
-	b, err := hc.CPDB.Has([]byte(address))
+	// cp key: cp_*
+	key := fmt.Sprintf("cp_%s", address)
+
+	// check if cp exists
+	b, err := hc.CPDB.Has([]byte(key))
 	if err != nil {
 		panic(err)
 	}
@@ -135,7 +125,7 @@ func (hc *handlerCore) RegistCPHandler(c *gin.Context) {
 	}
 
 	// wallet address as key, info as valude
-	err = hc.CPDB.Put([]byte(address), []byte(data))
+	err = hc.CPDB.Put([]byte(key), []byte(data))
 	if err != nil {
 		panic(err)
 	}
@@ -143,8 +133,94 @@ func (hc *handlerCore) RegistCPHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, "regist OK")
 }
 
+// handler for list cp nodes
+func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
+
+	// // read db
+	// data, err := hc.DB.Get([]byte("0x0090675FD3ef5031d7719A758163E73Fd58AF1EB"))
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// logger.Info("data from db:", string(data))
+
+	// // unmarshal
+	// cpInfo := &CPInfo{}
+	// err = json.Unmarshal(data, cpInfo)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// logger.Info("unmarshaled cp info:", cpInfo)
+
+	// open db
+	err := hc.CPDB.Open()
+	if err != nil {
+		logger.Error("Fail to open up the database, err: ", err)
+		panic(err)
+	}
+	defer hc.CPDB.Close()
+
+	// all cp info to response
+	cps := make([]CPInfo, 0, 100)
+
+	prefix := []byte("cp_") // 设置通配符前缀
+	err = hc.CPDB.DB.View(func(txn *badger.Txn) error {
+		it := txn.NewIterator(badger.DefaultIteratorOptions)
+		defer it.Close()
+		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+			err := appendResult(&cps, it.Item())
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	// response node list
+	c.JSON(http.StatusOK, cps)
+}
+
+// append db item into cps
+func appendResult(cps *[]CPInfo, item *badger.Item) error {
+	// append each item
+	err := item.Value(func(val []byte) error {
+		//fmt.Println("Key:", string(item.Key()), " Value:", string(val))
+		cp := CPInfo{}
+		err := json.Unmarshal(val, &cp)
+		if err != nil {
+			return err
+		}
+		// append
+		*cps = append(*cps, cp)
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("error processing result: %w", err)
+	}
+
+	return nil
+}
+
 // handler of create order
-func (hc *handlerCore) CreateOrderHandler(c *gin.Context) {
+func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
+
+	// open db
+	err := hc.CPDB.Open()
+	if err != nil {
+		logger.Error("Fail to open up the database, err: ", err)
+		panic(err)
+	}
+	defer hc.CPDB.Close()
+
+	// open db
+	err = hc.OrderDB.Open()
+	if err != nil {
+		logger.Error("Fail to open up the database, err: ", err)
+		panic(err)
+	}
+	defer hc.OrderDB.Close()
 
 	// user address
 	userAddr := c.PostForm("userAddress")
@@ -303,26 +379,32 @@ func (hc *handlerCore) CreateOrderHandler(c *gin.Context) {
 }
 
 // handler for get order list for user or cp
-func (hc *handlerCore) ListOrderHandler(c *gin.Context) {
+func (hc *HandlerCore) ListOrderHandler(c *gin.Context) {
+
+	// open db
+	err := hc.OrderDB.Open()
+	if err != nil {
+		logger.Error("Fail to open up the database, err: ", err)
+		panic(err)
+	}
+	defer hc.OrderDB.Close()
+
 	// get role
 	role := c.Query("role")
 	// user address from param
 	addr := c.Query("address")
 
-	// order db
-	db := hc.OrderDB
-
 	// order list for response
 	orderList := make([]OrderInfo, 0, 100)
-	var err error
+
 	switch role {
 	case "user":
-		orderList, err = listUserOrder(db, addr)
+		orderList, err = listUserOrder(hc.OrderDB, addr)
 		if err != nil {
 			panic(err)
 		}
 	case "cp":
-		orderList, err = listCpOrder(db, addr)
+		orderList, err = listCpOrder(hc.OrderDB, addr)
 		if err != nil {
 			panic(err)
 		}

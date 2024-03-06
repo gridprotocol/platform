@@ -48,6 +48,11 @@ var runCmd = &cli.Command{
 
 		// create server
 		svr := server.NewServer(opts)
+
+		// open and close for server
+		svr.LocalDB.Open()
+		defer svr.LocalDB.Close()
+
 		// register routes for server
 		svr.RegisterRoutes()
 

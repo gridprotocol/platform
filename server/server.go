@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rockiecn/platform/lib/config"
+	"github.com/rockiecn/platform/lib/kv"
 	"github.com/rockiecn/platform/lib/logs"
 	"github.com/rockiecn/platform/server/routes"
 )
@@ -17,6 +18,7 @@ type ServerOption struct {
 }
 
 type PFServer struct {
+	LocalDB    *kv.Database
 	HttpServer *http.Server
 }
 
@@ -41,6 +43,10 @@ func NewServer(opt ServerOption) *PFServer {
 	pfServer := PFServer{
 		HttpServer: httSvr,
 	}
+
+	// init db
+	pfServer.InitDB()
+
 	return &pfServer
 }
 
@@ -50,7 +56,15 @@ func (s *PFServer) RegisterRoutes() {
 	gin.SetMode(gin.ReleaseMode)
 
 	// register routes
-	router := routes.RegistRoutes()
+	routes := routes.RegistRoutes(s.LocalDB)
 
-	s.HttpServer.Handler = router
+	s.HttpServer.Handler = routes
+}
+
+// init db for platform
+func (s *PFServer) InitDB() {
+	// get db path from config
+	db_path := config.GetConfig().Local.DB_Path
+	// create cp db
+	s.LocalDB = kv.NewDB(db_path)
 }

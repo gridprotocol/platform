@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/rockiecn/platform/lib/kv"
 	"github.com/rockiecn/platform/lib/logs"
 )
 
@@ -58,36 +59,30 @@ type OrderInfo struct {
 	Settled  bool   `json:"settled"`
 }
 
-func init() {
-
-}
-
 // register all routes for server
-func RegistRoutes() Routes {
+func RegistRoutes(db *kv.Database) Routes {
 
-	router := gin.Default()
+	ginEng := gin.Default()
 
-	router.Use(cors())
+	ginEng.Use(cors())
 
-	r := Routes{
-		router,
+	routes := Routes{
+		ginEng,
 	}
 
 	// register all routes
-	r.registerAll()
+	routes.registerAll(db)
 
-	return r
+	return routes
 }
 
 // create local db, register all routes
-func (r Routes) registerAll() {
+func (r Routes) registerAll(db *kv.Database) {
 
-	// new handler core
+	// new handler core with db
 	hc := HandlerCore{
-		LocalDB: nil,
+		LocalDB: db,
 	}
-	// init db for hanlder core
-	hc.InitDB()
 
 	// for test
 	r.GET("/", hc.RootHandler)

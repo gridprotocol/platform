@@ -8,21 +8,12 @@ import (
 
 	"github.com/dgraph-io/badger/v2"
 	"github.com/gin-gonic/gin"
-	"github.com/rockiecn/platform/lib/config"
 	"github.com/rockiecn/platform/lib/kv"
 	"github.com/rockiecn/platform/lib/utils"
 )
 
 type HandlerCore struct {
 	LocalDB *kv.Database
-}
-
-// init db for handler core
-func (hc *HandlerCore) InitDB() {
-	// get db path from config
-	db_path := config.GetConfig().Local.DB_Path
-	// create cp db
-	hc.LocalDB = kv.NewDB(db_path)
 }
 
 // handler of welcom
@@ -32,14 +23,6 @@ func (hc *HandlerCore) RootHandler(c *gin.Context) {
 
 // handler of cp login
 func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
-
-	// open db
-	err := hc.LocalDB.Open()
-	if err != nil {
-		logger.Error("Fail to open up the database, err: ", err)
-		panic(err)
-	}
-	defer hc.LocalDB.Close()
 
 	// provider name
 	name := c.PostForm("name")
@@ -132,19 +115,11 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 // handler for list cp nodes
 func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 
-	// open db
-	err := hc.LocalDB.Open()
-	if err != nil {
-		logger.Error("Fail to open up the database, err: ", err)
-		panic(err)
-	}
-	defer hc.LocalDB.Close()
-
 	// all cp info to response
 	cps := make([]CPInfo, 0, 100)
 
 	prefix := []byte("cp_") // 设置通配符前缀
-	err = hc.LocalDB.DB.View(func(txn *badger.Txn) error {
+	err := hc.LocalDB.DB.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
@@ -186,14 +161,6 @@ func appendResult(cps *[]CPInfo, item *badger.Item) error {
 
 // handler of create order
 func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
-
-	// open db
-	err := hc.LocalDB.Open()
-	if err != nil {
-		logger.Error("Fail to open up the database, err: ", err)
-		panic(err)
-	}
-	defer hc.LocalDB.Close()
 
 	// user address
 	userAddr := c.PostForm("userAddress")
@@ -355,14 +322,6 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 // handler for get order list for user or cp
 func (hc *HandlerCore) ListOrderHandler(c *gin.Context) {
 
-	// open db
-	err := hc.LocalDB.Open()
-	if err != nil {
-		logger.Error("Fail to open up the database, err: ", err)
-		panic(err)
-	}
-	defer hc.LocalDB.Close()
-
 	// get role
 	role := c.Query("role")
 	// user address from param
@@ -370,6 +329,8 @@ func (hc *HandlerCore) ListOrderHandler(c *gin.Context) {
 
 	// order list for response
 	orderList := make([]OrderInfo, 0, 100)
+
+	var err error
 
 	switch role {
 	case "user":

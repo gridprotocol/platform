@@ -266,11 +266,11 @@ func (hc *handlerCore) CreateOrderHandler(c *gin.Context) {
 	}
 
 	// 'user address' _ 'order id' as order key
-	strKey := fmt.Sprintf("%s_%d", userAddr, utils.BytesToInt(orderID))
-	fmt.Println("key:", strKey)
+	orderKey := fmt.Sprintf("%s_%d", userAddr, utils.BytesToInt(orderID))
+	fmt.Println("key:", orderKey)
 
 	// put order info into db
-	hc.OrderDB.Put([]byte(strKey), []byte(data))
+	hc.OrderDB.Put([]byte(orderKey), []byte(data))
 
 	// increase order id
 	intID := utils.BytesToInt(orderID)
@@ -279,6 +279,12 @@ func (hc *handlerCore) CreateOrderHandler(c *gin.Context) {
 	fmt.Println("new order id:", utils.BytesToInt(orderID))
 	// update order id into db
 	err = hc.OrderDB.Put([]byte(userAddr), orderID)
+	if err != nil {
+		panic(err)
+	}
+
+	// append the order key for cp
+	err = hc.AppendOrder(cpAddr, orderKey)
 	if err != nil {
 		panic(err)
 	}
@@ -295,7 +301,7 @@ func (hc *handlerCore) CreateOrderHandler(c *gin.Context) {
 	})
 }
 
-// handler for get order list
+// handler for get user's order list
 func (hc *handlerCore) ListOrderHandler(c *gin.Context) {
 
 	// user address from param
@@ -336,6 +342,108 @@ func (hc *handlerCore) ListOrderHandler(c *gin.Context) {
 	// response order list
 	c.JSON(http.StatusOK, orderList)
 
+}
+
+// handler for get cp order list
+func (hc *handlerCore) ListCPOrderHandler(c *gin.Context) {
+
+	// cp address from param
+	cpAddr := c.Query("address")
+
+	// 'cp' _ 'address' as cp key
+	cpKey := fmt.Sprintf("cp_%s", cpAddr)
+	fmt.Println("key:", cpKey)
+
+	// init an empty order list
+	orderList := make([]OrderInfo, 0, 100)
+
+	// read db for cp order keys data
+	data, err := hc.OrderDB.Get([]byte(cpKey))
+	if err != nil {
+		// if no order id, response empty order list
+		if err.Error() == "Key not found" {
+			c.JSON(http.StatusOK, orderList)
+			return
+		} else {
+			panic(err)
+		}
+	}
+
+	var orderKeys []string
+	// unmarshal data into order keys if data is not empty
+	if len(data) != 0 {
+		err = json.Unmarshal([]byte(data), &orderKeys)
+		if err != nil {
+			fmt.Printf("unmarshal err=%v\n", err)
+		}
+	} else { // if no key data, response empty list
+		c.JSON(http.StatusOK, orderList)
+		return
+	}
+
+	// get order list with order keys
+	for i := 0; i < len(orderKeys); i++ {
+		// each item is an order key
+		key := orderKeys[i]
+		// get order
+		data, err := hc.OrderDB.Get([]byte(key))
+		if err != nil {
+			panic(err)
+		}
+		order := &OrderInfo{}
+		err = json.Unmarshal(data, order)
+		if err != nil {
+			panic(err)
+		}
+		orderList = append(orderList, *order)
+	}
+
+	// response order list
+	c.JSON(http.StatusOK, orderList)
+}
+
+// append an order key for a cp
+func (hc *handlerCore) AppendOrder(cpAddr string, orderKey string) error {
+	// 'cp' _ 'address' as cp key
+	cpKey := fmt.Sprintf("cp_%s", cpAddr)
+	fmt.Println("key:", cpKey)
+
+	var orderKeys []string = make([]string, 0)
+
+	// read order keys from db
+	data, err := hc.OrderDB.Get([]byte(cpKey))
+	if err != nil {
+		// if no order keys, init an empty data
+		if err.Error() == "Key not found" {
+			data = []byte{}
+		} else {
+			panic(err)
+		}
+	}
+
+	// if data not empty, unmarshal it
+	if len(data) != 0 {
+		err = json.Unmarshal(data, &orderKeys)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	// append into keys
+	orderKeys = append(orderKeys, orderKey)
+
+	data, err = json.Marshal(orderKeys)
+	if err != nil {
+		panic(err)
+	}
+
+	// put new order list for cp
+	err = hc.OrderDB.Put([]byte(cpKey), data)
+	if err != nil {
+		panic(err)
+	}
+
+	return nil
 }
 
 // for cross domain

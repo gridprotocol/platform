@@ -109,5 +109,8 @@ func (r Routes) registerAll() {
 	r.POST("/registcp", hc.RegistCPHandler)
 	r.GET("/listcp", hc.ListCPHandler)
 	r.POST("/createorder", hc.CreateOrderHandler)
+	// list orders for user
 	r.GET("/listorder", hc.ListOrderHandler)
+	// list orders for cp
+	r.GET("/listcporder", hc.ListCPOrderHandler)
 }

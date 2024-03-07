@@ -16,6 +16,16 @@ type HandlerCore struct {
 	LocalDB *kv.Database
 }
 
+// pay info when recharge credit, need to be stored in db
+type PayInfo struct {
+	PIKey       string `json:"PayInfoKey"`
+	Payer       string `json:"Payer"`
+	Credit      uint64 `json:"Credit"`
+	TxHash      string `json:"TxHash"`
+	TxConfirmed bool   `json:"TxConfirmed"`
+	CreditSaved bool   `json:"CreditSaved"`
+}
+
 // handler of welcom
 func (hc *HandlerCore) RootHandler(c *gin.Context) {
 	c.String(http.StatusOK, "Welcome Server")
@@ -530,11 +540,12 @@ func (hc *HandlerCore) appendOrder(cpAddr string, orderKey string) error {
 
 // record credit
 // value uint: eth
-func (hc *HandlerCore) Credit(c *gin.Context) {
+// crecit = eth * 1000000
+func (hc *HandlerCore) Pay(c *gin.Context) {
 	from := c.PostForm("from")
 	//to := c.PostForm("to")
 	value := c.PostForm("value")
-	//txHash := c.PostForm("txHash")
+	txHash := c.PostForm("txHash")
 
 	//todo: verify txHash
 
@@ -550,9 +561,9 @@ func (hc *HandlerCore) Credit(c *gin.Context) {
 
 	logger.Debug("credit key:", creKey)
 
-	// used to update credit
+	// todo: this credit update must be done after txHash confirmed
+	// update credit for this account
 	var old string
-
 	// get old credit from db, if key not found, init with 0
 	data, err := hc.LocalDB.Get([]byte(creKey))
 	if err != nil {
@@ -577,13 +588,124 @@ func (hc *HandlerCore) Credit(c *gin.Context) {
 
 	logger.Debug("new credit:", new)
 
-	// update credit in db
+	// update credit for this account
 	err = hc.LocalDB.Put([]byte(creKey), []byte(new))
 	if err != nil {
 		panic(err)
 	}
 
-	c.JSON(http.StatusOK, "credit ok")
+	// get payinfo id for this account: payid_*
+	var oldID string
+	idKey := fmt.Sprintf("payid_%s", from)
+	data, err = hc.LocalDB.Get([]byte(idKey))
+	if err != nil {
+		if err.Error() == "Key not found" {
+			oldID = "0"
+		} else {
+			panic(err)
+		}
+	} else {
+		oldID = string(data)
+	}
+	logger.Debug("old pay id:", oldID)
+
+	oldID64, err := utils.StringToUint64(oldID)
+	if err != nil {
+		panic(err)
+	}
+
+	// update payinfo id
+	newID := utils.Uint64ToString(oldID64 + 1)
+	logger.Debug("new payinfo id:", newID)
+	// update payinfo id for this account
+	err = hc.LocalDB.Put([]byte(idKey), []byte(newID))
+	if err != nil {
+		panic(err)
+	}
+
+	// make payinfo's key: account_pi_id
+	piKey := fmt.Sprintf("%s_pi_%s", from, oldID)
+	logger.Debug("payinfo key:", piKey)
+	// record pay info into db
+	// payInfo: from, value, credit, txHash, txConfirmed, creditSaved
+	payInfo := PayInfo{
+		PIKey:       piKey,
+		Payer:       from,
+		Credit:      credit,
+		TxHash:      txHash,
+		TxConfirmed: false,
+		CreditSaved: false,
+	}
+	// marshal to bytes
+	data, err = json.Marshal(payInfo)
+	if err != nil {
+		panic(err)
+	}
+	// record payinfo data
+	err = hc.LocalDB.Put([]byte(piKey), data)
+	if err != nil {
+		panic(err)
+	}
+
+	// response
+	c.JSON(http.StatusOK, "pay ok")
+}
+
+// query pay infos
+func (hc *HandlerCore) QueryPay(c *gin.Context) {
+	addr := c.Query("addr")
+
+	piList, err := hc.getPayInfoList(addr)
+	if err != nil {
+		panic(err)
+	}
+
+	// response
+	c.JSON(http.StatusOK, piList)
+}
+
+// get user's order list from db
+func (hc *HandlerCore) getPayInfoList(addr string) ([]PayInfo, error) {
+	piList := make([]PayInfo, 0, 100)
+
+	idKey := fmt.Sprintf("payid_%s", addr)
+	// get pay id
+	data, err := hc.LocalDB.Get([]byte(idKey))
+	if err != nil {
+		// if no pay id, no payinfo
+		if err.Error() == "Key not found" {
+			return piList, nil
+		} else {
+			return nil, err
+		}
+	}
+	payID := string(data)
+	logger.Debug("account's pay id:", payID)
+
+	// number of order
+	num, err := utils.StringToUint64(payID)
+	if err != nil {
+		panic(err)
+	}
+	for i := uint64(0); i < num; i++ {
+		// make payInfo key
+		piKey := fmt.Sprintf("%s_pi_%d", addr, i)
+		logger.Debug("order key:", piKey)
+		// get order
+		data, err := hc.LocalDB.Get([]byte(piKey))
+		if err != nil {
+			return nil, err
+		}
+		pi := &PayInfo{}
+		err = json.Unmarshal(data, pi)
+		if err != nil {
+			return nil, err
+		}
+		piList = append(piList, *pi)
+	}
+
+	// payinfo list
+	return piList, nil
 }
 
 // qeury credit for a role with address

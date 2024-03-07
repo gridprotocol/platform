@@ -480,6 +480,120 @@ func (hc *HandlerCore) appendOrder(cpAddr string, orderKey string) error {
 	return nil
 }
 
+// record credit
+// value uint: eth
+func (hc *HandlerCore) Credit(c *gin.Context) {
+	from := c.PostForm("from")
+	//to := c.PostForm("to")
+	value := c.PostForm("value")
+	//txHash := c.PostForm("txHash")
+
+	//todo: verify txHash
+
+	value64, err := utils.StringToUint64(value)
+	if err != nil {
+		panic(err)
+	}
+	// calc credit: eth * 10^6
+	credit := value64 * 1000000
+
+	// credit key: cre_*
+	creKey := fmt.Sprintf("cre_%s", from)
+
+	logger.Debug("credit key:", creKey)
+
+	// used to update credit
+	var old string
+
+	// get old credit from db, if key not found, init with 0
+	data, err := hc.LocalDB.Get([]byte(creKey))
+	if err != nil {
+		if err.Error() == "Key not found" {
+			old = "0"
+		} else {
+			panic(err)
+		}
+	} else {
+		old = string(data)
+	}
+	logger.Debug("old credit:", old)
+	logger.Debug("credit:", credit)
+
+	// accumulate credit
+	old64, err := utils.StringToUint64(old)
+	if err != nil {
+		panic(err)
+	}
+	new64 := old64 + credit
+	new := utils.Uint64ToString(new64)
+
+	logger.Debug("new credit:", new)
+
+	// update credit in db
+	err = hc.LocalDB.Put([]byte(creKey), []byte(new))
+	if err != nil {
+		panic(err)
+	}
+
+	c.JSON(http.StatusOK, "credit ok")
+}
+
+// qeury credit for a role with address
+func (hc *HandlerCore) QueryCredit(c *gin.Context) {
+	role := c.Query("role")
+	address := c.Query("address")
+
+	// key: cre_address
+	creKey := fmt.Sprintf("cre_%s", address)
+
+	var credit string
+
+	switch role {
+	case "user":
+		// get old credit from db, if key not found, init with 0
+		data, err := hc.LocalDB.Get([]byte(creKey))
+		if err != nil {
+			if err.Error() == "Key not found" {
+				c.JSON(http.StatusOK, "account not found")
+				return
+			} else {
+				panic(err)
+			}
+		} else {
+			credit = string(data)
+		}
+
+		logger.Debug("credit:", credit)
+
+		c.JSON(http.StatusOK, gin.H{
+			credit: credit,
+		})
+
+	// todo: update cp's all orders, update settled state
+	case "cp":
+		// get old credit from db, if key not found, init with 0
+		data, err := hc.LocalDB.Get([]byte(creKey))
+		if err != nil {
+			if err.Error() == "Key not found" {
+				c.JSON(http.StatusOK, "account not found")
+				return
+			} else {
+				panic(err)
+			}
+		} else {
+			credit = string(data)
+		}
+
+		logger.Debug("credit:", credit)
+
+		c.JSON(http.StatusOK, gin.H{
+			credit: credit,
+		})
+	default:
+		c.JSON(http.StatusOK, "error role in request")
+	}
+}
+
 // for cross domain
 func cors() gin.HandlerFunc {
 	return func(c *gin.Context) {

@@ -87,10 +87,17 @@ func (r Routes) registerAll(db *kv.Database) {
 	// for test
 	r.GET("/", hc.RootHandler)
 
-	// for functions
+	// cp operation
 	r.POST("/registcp", hc.RegistCPHandler)
 	r.GET("/listcp", hc.ListCPHandler)
+
+	// order operation
 	r.POST("/createorder", hc.CreateOrderHandler)
 	// list orders for user
 	r.GET("/listorder", hc.ListOrderHandler)
+
+	// recharge credit with eth in tx
+	r.POST("/credit", hc.Credit)
+	// query credit for an address
+	r.GET("/querycredit", hc.QueryCredit)
 }

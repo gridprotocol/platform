@@ -243,23 +243,25 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	endPoint := cp.EndPoint
 
 	// get current order id for each user, used in new order
-	orderID, err := hc.LocalDB.Get([]byte(userAddr))
+	var orderID string
+	data, err = hc.LocalDB.Get([]byte(userAddr))
 	if err != nil {
 		// if no order id, init with 0
 		if err.Error() == "Key not found" {
-			err = hc.LocalDB.Put([]byte(userAddr), utils.IntToBytes(0))
-			if err != nil {
-				panic(err)
-			}
+			orderID = "0"
 		} else {
 			panic(err)
 		}
+	} else {
+		logger.Debugf("data:%s", data)
+		orderID = string(data)
 	}
-	logger.Debugf("old order id:", utils.BytesToInt(orderID))
+
+	logger.Debugf("old order id:%s", orderID)
 
 	// 'user address' _ 'order id' as order key
-	orderKey := fmt.Sprintf("%s_%d", userAddr, utils.BytesToInt(orderID))
-	logger.Debugf("key:", orderKey)
+	orderKey := fmt.Sprintf("%s_%s", userAddr, orderID)
+	logger.Debugf("order key:%s", orderKey)
 
 	// construct new order info
 	info := OrderInfo{
@@ -281,6 +283,47 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 		Settled:  false,
 	}
 
+	// calc credit cost of order
+	cost64, err := CalcCost(&info)
+	if err != nil {
+		panic(err)
+	}
+	logger.Debug("credit cost:", cost64)
+
+	// check credit for user
+	var credit string
+	creKey := fmt.Sprintf("cre_%s", userAddr)
+	data, err = hc.LocalDB.Get([]byte(creKey))
+	if err != nil {
+		if err.Error() == "Key not found" {
+			c.JSON(http.StatusOK, "account not found")
+			return
+		} else {
+			panic(err)
+		}
+	} else {
+		credit = string(data)
+	}
+	logger.Debug("credit left:", credit)
+	credit64, err := utils.StringToUint64(credit)
+	if err != nil {
+		panic(err)
+	}
+	// check credit
+	if credit64 < cost64 {
+		c.JSON(http.StatusOK, "credit is not enough to pay this order,create order failed")
+		return
+	}
+
+	// update credit
+	credit64 = credit64 - cost64
+	credit = utils.Uint64ToString(credit64)
+	// update user's credit in db
+	hc.LocalDB.Put([]byte(creKey), []byte(credit))
+	logger.Debug("new credit after createorder:", credit)
+
+	// db operation
+
 	// mashal order info into bytes
 	data, err = json.Marshal(info)
 	if err != nil {
@@ -290,32 +333,31 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	// put order info into db
 	hc.LocalDB.Put([]byte(orderKey), []byte(data))
 
-	// increase order id
-	intID := utils.BytesToInt(orderID)
-	intID += 1
-	orderID = utils.IntToBytes(intID)
-	logger.Debugf("new order id:", utils.BytesToInt(orderID))
-	// update order id
-	err = hc.LocalDB.Put([]byte(userAddr), orderID)
+	// increase order id by 1
+	orderID64, err := utils.StringToUint64(orderID)
 	if err != nil {
 		panic(err)
 	}
 
-	// append an order key for cp
+	orderID64 += 1
+	orderID = utils.Uint64ToString(orderID64)
+	logger.Debugf("new order id:%s", orderID)
+	// update order id
+	err = hc.LocalDB.Put([]byte(userAddr), []byte(orderID))
+	if err != nil {
+		panic(err)
+	}
+
+	// append an order key for cp into db
 	err = hc.appendOrder(cpAddr, orderKey)
 	if err != nil {
 		panic(err)
 	}
 
-	// calc value of order
-	v, err := CalcValue(&info)
-	if err != nil {
-		panic(err)
-	}
-
+	// response
 	c.JSON(http.StatusOK, gin.H{
-		"to":    "0x1234",
-		"value": v,
+		"to":   "0x1234",
+		"cost": cost64, // credit = eth*1000000
 	})
 }
 
@@ -356,7 +398,7 @@ func (hc *HandlerCore) listUserOrder(userAddr string) ([]OrderInfo, error) {
 	orderList := make([]OrderInfo, 0, 100)
 
 	// get order id, equal to order number of this user
-	orderID, err := hc.LocalDB.Get([]byte(userAddr))
+	data, err := hc.LocalDB.Get([]byte(userAddr))
 	if err != nil {
 		// if no order id, init with 0
 		if err.Error() == "Key not found" {
@@ -365,12 +407,18 @@ func (hc *HandlerCore) listUserOrder(userAddr string) ([]OrderInfo, error) {
 			return nil, err
 		}
 	}
+	orderID := string(data)
+	logger.Debug("user's order id:", orderID)
 
 	// number of order
-	num := utils.BytesToInt(orderID)
-	for i := 0; i < num; i++ {
+	num, err := utils.StringToUint64(orderID)
+	if err != nil {
+		panic(err)
+	}
+	for i := uint64(0); i < num; i++ {
 		// make key
 		key := fmt.Sprintf("%s_%d", userAddr, i)
+		logger.Debug("order key:", key)
 		// get order
 		data, err := hc.LocalDB.Get([]byte(key))
 		if err != nil {
@@ -613,8 +661,8 @@ func cors() gin.HandlerFunc {
 	}
 }
 
-// calc value of an order
-func CalcValue(o *OrderInfo) (uint64, error) {
+// calc credit cost of an order
+func CalcCost(o *OrderInfo) (uint64, error) {
 	nCPU, err := utils.StringToUint64(o.NumCPU)
 	if err != nil {
 		return 0, err
@@ -662,10 +710,15 @@ func CalcValue(o *OrderInfo) (uint64, error) {
 		return 0, err
 	}
 
-	// get value
+	// get wei value
 	value := (nCPU*pCPU + nGPU*pGPU + nMem*pMem + nStor*pStor) * dur
+	logger.Debug("wei of order:", value)
 
-	return value, nil
+	cost := value / 1000 / 1000 / 1000 / 1000
+	logger.Debug("credit cost of order:", cost)
+
+	// return credit cost
+	return cost, nil
 }
 
 // check number

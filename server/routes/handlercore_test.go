@@ -19,7 +19,7 @@ func Test_CalcValue(t *testing.T) {
 		Dur:      utils.Uint64ToString(1 * 30 * 86400),
 	}
 
-	res, err := CalcValue(&o)
+	res, err := CalcCost(&o)
 	if err != nil {
 		t.Log("calca value failed:", err)
 		t.FailNow()

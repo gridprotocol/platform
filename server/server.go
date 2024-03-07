@@ -42,6 +42,7 @@ func NewServer(opt ServerOption) *PFServer {
 	// make platform server
 	pfServer := PFServer{
 		HttpServer: httSvr,
+		LocalDB:    nil,
 	}
 
 	// init db

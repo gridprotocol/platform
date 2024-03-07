@@ -90,8 +90,8 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 		panic(err)
 	}
 
-	// cp key: cp_*
-	key := fmt.Sprintf("cp_%s", address)
+	// cp key: cp_info_*
+	key := fmt.Sprintf("cp_info_%s", address)
 
 	// check if cp exists
 	b, err := hc.LocalDB.Has([]byte(key))
@@ -118,7 +118,7 @@ func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 	// all cp info to response
 	cps := make([]CPInfo, 0, 100)
 
-	prefix := []byte("cp_") // 设置通配符前缀
+	prefix := []byte("cp_info_") // 设置通配符前缀
 	err := hc.LocalDB.DB.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
@@ -142,7 +142,7 @@ func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 func appendResult(cps *[]CPInfo, item *badger.Item) error {
 	// append each item
 	err := item.Value(func(val []byte) error {
-		//fmt.Println("Key:", string(item.Key()), " Value:", string(val))
+		logger.Debugf("Key:%s Value:%s", string(item.Key()), string(val))
 		cp := CPInfo{}
 		err := json.Unmarshal(val, &cp)
 		if err != nil {
@@ -217,7 +217,7 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 
 	// read cp name from db with cp address
 
-	cpkey := fmt.Sprintf("cp_%s", cpAddr)
+	cpkey := fmt.Sprintf("cp_info_%s", cpAddr)
 	// check cp
 	b, err := hc.LocalDB.Has([]byte(cpkey))
 	if err != nil {
@@ -302,7 +302,7 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	}
 
 	// append an order key for cp
-	err = AppendOrder(hc.LocalDB, cpAddr, orderKey)
+	err = hc.appendOrder(cpAddr, orderKey)
 	if err != nil {
 		panic(err)
 	}
@@ -334,12 +334,12 @@ func (hc *HandlerCore) ListOrderHandler(c *gin.Context) {
 
 	switch role {
 	case "user":
-		orderList, err = listUserOrder(hc.LocalDB, addr)
+		orderList, err = hc.listUserOrder(addr)
 		if err != nil {
 			panic(err)
 		}
 	case "cp":
-		orderList, err = listCpOrder(hc.LocalDB, addr)
+		orderList, err = hc.listCpOrder(addr)
 		if err != nil {
 			panic(err)
 		}
@@ -352,11 +352,11 @@ func (hc *HandlerCore) ListOrderHandler(c *gin.Context) {
 }
 
 // get user's order list from db
-func listUserOrder(db *kv.Database, userAddr string) ([]OrderInfo, error) {
+func (hc *HandlerCore) listUserOrder(userAddr string) ([]OrderInfo, error) {
 	orderList := make([]OrderInfo, 0, 100)
 
 	// get order id, equal to order number of this user
-	orderID, err := db.Get([]byte(userAddr))
+	orderID, err := hc.LocalDB.Get([]byte(userAddr))
 	if err != nil {
 		// if no order id, init with 0
 		if err.Error() == "Key not found" {
@@ -372,7 +372,7 @@ func listUserOrder(db *kv.Database, userAddr string) ([]OrderInfo, error) {
 		// make key
 		key := fmt.Sprintf("%s_%d", userAddr, i)
 		// get order
-		data, err := db.Get([]byte(key))
+		data, err := hc.LocalDB.Get([]byte(key))
 		if err != nil {
 			return nil, err
 		}
@@ -388,7 +388,7 @@ func listUserOrder(db *kv.Database, userAddr string) ([]OrderInfo, error) {
 }
 
 // get order list for cp
-func listCpOrder(db *kv.Database, cpAddr string) ([]OrderInfo, error) {
+func (hc *HandlerCore) listCpOrder(cpAddr string) ([]OrderInfo, error) {
 	// 'cp' _ 'address' as cp key
 	cpordersKey := fmt.Sprintf("cp_orders_%s", cpAddr)
 
@@ -396,7 +396,7 @@ func listCpOrder(db *kv.Database, cpAddr string) ([]OrderInfo, error) {
 	orderList := make([]OrderInfo, 0, 100)
 
 	// read db for cp order keys data
-	data, err := db.Get([]byte(cpordersKey))
+	data, err := hc.LocalDB.Get([]byte(cpordersKey))
 	if err != nil {
 		// if no order id, return empty order list
 		if err.Error() == "Key not found" {
@@ -422,7 +422,7 @@ func listCpOrder(db *kv.Database, cpAddr string) ([]OrderInfo, error) {
 		// each item is an order key
 		key := orderKeys[i]
 		// get order
-		data, err := db.Get([]byte(key))
+		data, err := hc.LocalDB.Get([]byte(key))
 		if err != nil {
 			panic(err)
 		}
@@ -438,14 +438,14 @@ func listCpOrder(db *kv.Database, cpAddr string) ([]OrderInfo, error) {
 }
 
 // append an order key for a cp
-func AppendOrder(db *kv.Database, cpAddr string, orderKey string) error {
+func (hc *HandlerCore) appendOrder(cpAddr string, orderKey string) error {
 	// 'cp' _ 'address' as cp key
 	cpordersKey := fmt.Sprintf("cp_orders_%s", cpAddr)
 
 	var orderKeys []string = make([]string, 0)
 
 	// read order keys from db
-	data, err := db.Get([]byte(cpordersKey))
+	data, err := hc.LocalDB.Get([]byte(cpordersKey))
 	if err != nil {
 		// if no order keys, init an empty data
 		if err.Error() == "Key not found" {
@@ -472,7 +472,7 @@ func AppendOrder(db *kv.Database, cpAddr string, orderKey string) error {
 	}
 
 	// put new order list for cp
-	err = db.Put([]byte(cpordersKey), data)
+	err = hc.LocalDB.Put([]byte(cpordersKey), data)
 	if err != nil {
 		panic(err)
 	}

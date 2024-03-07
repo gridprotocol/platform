@@ -257,9 +257,13 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	}
 	logger.Debugf("old order id:", utils.BytesToInt(orderID))
 
+	// 'user address' _ 'order id' as order key
+	orderKey := fmt.Sprintf("%s_%d", userAddr, utils.BytesToInt(orderID))
+	logger.Debugf("key:", orderKey)
+
 	// construct new order info
 	info := OrderInfo{
-		OrderID:  fmt.Sprintf("%d", utils.BytesToInt(orderID)),
+		OrderKey: orderKey,
 		UserAddr: userAddr,
 		CPAddr:   cpAddr,
 		CPName:   cpName,
@@ -282,10 +286,6 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-
-	// 'user address' _ 'order id' as order key
-	orderKey := fmt.Sprintf("%s_%d", userAddr, utils.BytesToInt(orderID))
-	logger.Debugf("key:", orderKey)
 
 	// put order info into db
 	hc.LocalDB.Put([]byte(orderKey), []byte(data))

@@ -41,7 +41,7 @@ type CPInfo struct {
 }
 
 type OrderInfo struct {
-	OrderID  string `json:"orderID"`     // order id for this user
+	OrderKey string `json:"orderKey"`    // order id for this user
 	UserAddr string `json:"userAddress"` // user address
 	CPAddr   string `json:"cpAddress"`   // provider address
 	CPName   string `json:"cpName"`      // provider name

@@ -41,7 +41,7 @@ type CPInfo struct {
 }
 
 type OrderInfo struct {
-	OrderKey string `json:"orderKey"`    // order id for this user
+	OrderKey string `json:"orderKey"`    // order key
 	UserAddr string `json:"userAddress"` // user address
 	CPAddr   string `json:"cpAddress"`   // provider address
 	CPName   string `json:"cpName"`      // provider name
@@ -57,6 +57,7 @@ type OrderInfo struct {
 	Dur      string `json:"duration"`
 	Expire   string `json:"expire"`
 	Settled  bool   `json:"settled"`
+	Cost     uint64 `json:"cost"` // credit cost
 }
 
 // register all routes for server

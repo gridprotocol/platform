@@ -19,10 +19,19 @@ type HandlerCore struct {
 
 // pay info when recharge credit, need to be stored in db
 type PayInfo struct {
-	PIKey       string `json:"PayInfoKey"`
-	Payer       string `json:"Payer"`
-	Credit      uint64 `json:"Credit"`
+	PIKey  string `json:"PayInfoKey"`
+	Payer  string `json:"Payer"`
+	Credit uint64 `json:"Credit"`
+	TxHash string `json:"TxHash"`
+}
+
+// info about a transfer
+type TransferInfo struct {
+	TIKey       string `json:"TxInfoKey"`
 	TxHash      string `json:"TxHash"`
+	From        string `json:"From"`
+	To          string `json:"To"`
+	Value       string `json:"Value"`
 	TxConfirmed bool   `json:"TxConfirmed"`
 	CreditSaved bool   `json:"CreditSaved"`
 }
@@ -255,17 +264,9 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 
 	// get current order id for each user, used in new order
 	var orderID string
-	data, err = hc.LocalDB.Get([]byte(userAddr))
+	orderID, err = hc.getID("user", userAddr)
 	if err != nil {
-		// if no order id, init with 0
-		if err.Error() == "Key not found" {
-			orderID = "0"
-		} else {
-			panic(err)
-		}
-	} else {
-		logger.Debugf("data:%s", data)
-		orderID = string(data)
+		panic(err)
 	}
 
 	logger.Debugf("old order id:%s", orderID)
@@ -363,11 +364,8 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	orderID = utils.Uint64ToString(orderID64)
 	logger.Debugf("new order id:%s", orderID)
 	// update order id
-	// err = hc.LocalDB.Put([]byte(userAddr), []byte(orderID))
-	// if err != nil {
-	// 	panic(err)
-	// }
-	keys = append(keys, []byte(userAddr))
+	idKey := fmt.Sprintf("user_%s", userAddr)
+	keys = append(keys, []byte(idKey))
 	values = append(values, []byte(orderID))
 	pos++
 
@@ -401,11 +399,10 @@ func (hc *HandlerCore) ListOrderHandler(c *gin.Context) {
 	// user address from param
 	addr := c.Query("address")
 
-	// order list for response
-	orderList := make([]OrderInfo, 0, 100)
-
+	var orderList []OrderInfo
 	var err error
 
+	// order list for response
 	switch role {
 	case "user":
 		orderList, err = hc.getUserOrders(addr)
@@ -429,17 +426,12 @@ func (hc *HandlerCore) ListOrderHandler(c *gin.Context) {
 func (hc *HandlerCore) getUserOrders(userAddr string) ([]OrderInfo, error) {
 	orderList := make([]OrderInfo, 0, 100)
 
-	// get order id, equal to order number of this user
-	data, err := hc.LocalDB.Get([]byte(userAddr))
+	// get order id, key: user_*
+	orderID, err := hc.getID("user", userAddr)
 	if err != nil {
-		// if no order id, init with 0
-		if err.Error() == "Key not found" {
-			return orderList, nil
-		} else {
-			return nil, err
-		}
+		panic(err)
 	}
-	orderID := string(data)
+
 	logger.Debug("user's order id:", orderID)
 
 	// number of order
@@ -456,12 +448,12 @@ func (hc *HandlerCore) getUserOrders(userAddr string) ([]OrderInfo, error) {
 		if err != nil {
 			return nil, err
 		}
-		order := &OrderInfo{}
-		err = json.Unmarshal(data, order)
+		order := OrderInfo{}
+		err = json.Unmarshal(data, &order)
 		if err != nil {
 			return nil, err
 		}
-		orderList = append(orderList, *order)
+		orderList = append(orderList, order)
 	}
 
 	return orderList, nil
@@ -506,12 +498,12 @@ func (hc *HandlerCore) getCpOrders(cpAddr string) ([]OrderInfo, error) {
 		if err != nil {
 			panic(err)
 		}
-		order := &OrderInfo{}
-		err = json.Unmarshal(data, order)
+		order := OrderInfo{}
+		err = json.Unmarshal(data, &order)
 		if err != nil {
 			panic(err)
 		}
-		orderList = append(orderList, *order)
+		orderList = append(orderList, order)
 	}
 
 	return orderList, nil
@@ -563,7 +555,7 @@ func (hc *HandlerCore) appendOrder(cpAddr string, orderKey string) (k []byte, v 
 // user record credit with txHash
 // value uint: eth
 // crecit = eth * 1000000
-func (hc *HandlerCore) Pay(c *gin.Context) {
+func (hc *HandlerCore) PayHandler(c *gin.Context) {
 	from := c.PostForm("from")
 	//to := c.PostForm("to")
 	value := c.PostForm("value")
@@ -651,12 +643,10 @@ func (hc *HandlerCore) Pay(c *gin.Context) {
 	// record pay info into db
 	// payInfo: from, value, credit, txHash, txConfirmed, creditSaved
 	payInfo := PayInfo{
-		PIKey:       piKey,
-		Payer:       from,
-		Credit:      credit,
-		TxHash:      txHash,
-		TxConfirmed: false,
-		CreditSaved: false,
+		PIKey:  piKey,
+		Payer:  from,
+		Credit: credit,
+		TxHash: txHash,
 	}
 	// marshal to bytes
 	data, err = json.Marshal(payInfo)
@@ -669,12 +659,14 @@ func (hc *HandlerCore) Pay(c *gin.Context) {
 		panic(err)
 	}
 
+	// todo: modify txinfo's state(credit saved), add atomic operation for db
+
 	// response
 	c.JSON(http.StatusOK, "pay ok")
 }
 
 // query pay infos
-func (hc *HandlerCore) QueryPay(c *gin.Context) {
+func (hc *HandlerCore) QueryPayHandler(c *gin.Context) {
 	addr := c.Query("addr")
 
 	piList, err := hc.getPayInfoList(addr)
@@ -731,7 +723,7 @@ func (hc *HandlerCore) getPayInfoList(addr string) ([]PayInfo, error) {
 }
 
 // qeury credit for a role with address
-func (hc *HandlerCore) QueryCredit(c *gin.Context) {
+func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 	role := c.Query("role")
 	address := c.Query("address")
 
@@ -916,6 +908,139 @@ func (hc *HandlerCore) setOrderSettled(key []byte, settled bool) (k []byte, v []
 
 	// return k,v for db
 	return key, data, nil
+}
+
+// transfer, write transfer records into db
+// transfer info key: trans_user_id
+// id key: trans_*
+func (hc *HandlerCore) TransferHandler(c *gin.Context) {
+	txHash := c.Query("txHash")
+	from := c.Query("from")
+	to := c.Query("to")
+	value := c.Query("value")
+
+	confirmed := false
+	creditSaved := false
+
+	// for atomic
+	keys := [][]byte{}
+	values := [][]byte{}
+
+	id, err := hc.getID("trans", from)
+	if err != nil {
+		panic(err)
+	}
+
+	id64, err := utils.StringToUint64(id)
+	if err != nil {
+		panic(err)
+	}
+	id64++
+	newID := utils.Uint64ToString(id64)
+	idKey := fmt.Sprintf("trans_%s", from)
+
+	// update id key
+	keys = append(keys, []byte(idKey))
+	values = append(values, []byte(newID))
+
+	// key for transfer info
+	tiKey := fmt.Sprintf("trans_%s_%s", from, id)
+	// make ti
+	ti := TransferInfo{
+		TIKey:       tiKey,
+		TxHash:      txHash,
+		From:        from,
+		To:          to,
+		Value:       value,
+		TxConfirmed: confirmed,
+		CreditSaved: creditSaved,
+	}
+	data, err := json.Marshal(ti)
+	if err != nil {
+		panic(err)
+	}
+	// record ti
+	keys = append(keys, []byte(tiKey))
+	values = append(values, []byte(data))
+
+	// multiput
+	hc.LocalDB.MultiPut(keys, values)
+
+	c.JSON(http.StatusOK, gin.H{"res": "transfer ok"})
+}
+
+// list all transfer info about an user
+func (hc *HandlerCore) ListTransferHandler(c *gin.Context) {
+
+	// user address from param
+	addr := c.Query("address")
+
+	// transfer list for response
+	transList, err := hc.getUserTransfers(addr)
+	if err != nil {
+		panic(err)
+	}
+
+	c.JSON(http.StatusOK, transList)
+}
+
+// get user's all transfer info from db
+func (hc *HandlerCore) getUserTransfers(userAddr string) ([]TransferInfo, error) {
+	transList := make([]TransferInfo, 0, 100)
+
+	// get transfer id
+	transID, err := hc.getID("trans", userAddr)
+	if err != nil {
+		panic(err)
+	}
+
+	logger.Debug("user's transfer id:", transID)
+
+	// number of transfers
+	num, err := utils.StringToUint64(transID)
+	if err != nil {
+		panic(err)
+	}
+	for i := uint64(0); i < num; i++ {
+		// make key: trans_user_id
+		key := fmt.Sprintf("trans_%s_%d", userAddr, i)
+		logger.Debug("transfer key:", key)
+		// get transfer
+		data, err := hc.LocalDB.Get([]byte(key))
+		if err != nil {
+			return nil, err
+		}
+		transfer := TransferInfo{}
+		err = json.Unmarshal(data, &transfer)
+		if err != nil {
+			return nil, err
+		}
+		transList = append(transList, transfer)
+	}
+
+	return transList, nil
+}
+
+// get an ID from db with prefix and address
+func (hc *HandlerCore) getID(pre string, addr string) (string, error) {
+	// make key with pre and addr
+	key := fmt.Sprintf("%s_%s", pre, addr)
+
+	var id string
+	data, err := hc.LocalDB.Get([]byte(key))
+	if err != nil {
+		// if no id record, init with 0
+		if err.Error() == "Key not found" {
+			id = "0"
+		} else {
+			panic(err)
+		}
+	} else {
+		logger.Debugf("data:%s", data)
+		id = string(data)
+	}
+
+	return id, nil
 }
 
 // for cross domain

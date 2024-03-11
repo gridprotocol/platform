@@ -98,8 +98,12 @@ func (r Routes) registerAll(db *kv.Database) {
 	r.GET("/listorder", hc.ListOrderHandler)
 
 	// recharge credit with eth in tx
-	r.POST("/pay", hc.Pay)
-	r.GET("/querypay", hc.QueryPay)
+	r.POST("/pay", hc.PayHandler)
+	r.GET("/querypay", hc.QueryPayHandler)
 	// query credit for an address
-	r.GET("/querycredit", hc.QueryCredit)
+	r.GET("/querycredit", hc.QueryCreditHandler)
+
+	// transfer
+	r.POST("/transfer", hc.TransferHandler)
+	r.GET("/listtransfer", hc.ListTransferHandler)
 }

@@ -69,6 +69,16 @@ func StringToUint64(s string) (uint64, error) {
 	return u, nil
 }
 
+// string to int64
+func StringToInt64(s string) (int64, error) {
+	u, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return u, nil
+}
+
 func Uint64ToString(u uint64) string {
 	res := strconv.FormatUint(u, 10) //int64转字符串
 	return res

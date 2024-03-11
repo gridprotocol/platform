@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"time"
 
 	"github.com/dgraph-io/badger/v2"
 	"github.com/gin-gonic/gin"
@@ -133,7 +134,7 @@ func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-			err := appendResult(&cps, it.Item())
+			err := hc.appendResult(&cps, it.Item())
 			if err != nil {
 				return err
 			}
@@ -149,7 +150,7 @@ func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 }
 
 // append db item into cps
-func appendResult(cps *[]CPInfo, item *badger.Item) error {
+func (hc *HandlerCore) appendResult(cps *[]CPInfo, item *badger.Item) error {
 	// append each item
 	err := item.Value(func(val []byte) error {
 		logger.Debugf("Key:%s Value:%s", string(item.Key()), string(val))
@@ -309,7 +310,7 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	data, err = hc.LocalDB.Get([]byte(creKey))
 	if err != nil {
 		if err.Error() == "Key not found" {
-			c.JSON(http.StatusOK, "account not found")
+			c.JSON(http.StatusOK, "no credit for this user")
 			return
 		} else {
 			panic(err)
@@ -328,11 +329,19 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 		return
 	}
 
+	// for atomic operations on db
+	keys := [][]byte{}
+	values := [][]byte{}
+	pos := 0
+
 	// update user's credit
 	credit64 = credit64 - cost64
 	credit = utils.Uint64ToString(credit64)
 	// update user's credit in db
-	hc.LocalDB.Put([]byte(creKey), []byte(credit))
+	//hc.LocalDB.Put([]byte(creKey), []byte(credit))
+	keys = append(keys, []byte(creKey))
+	values = append(values, []byte(credit))
+	pos++
 	logger.Debug("new credit after createorder:", credit)
 
 	// db operation
@@ -354,20 +363,32 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	orderID = utils.Uint64ToString(orderID64)
 	logger.Debugf("new order id:%s", orderID)
 	// update order id
-	err = hc.LocalDB.Put([]byte(userAddr), []byte(orderID))
+	// err = hc.LocalDB.Put([]byte(userAddr), []byte(orderID))
+	// if err != nil {
+	// 	panic(err)
+	// }
+	keys = append(keys, []byte(userAddr))
+	values = append(values, []byte(orderID))
+	pos++
+
+	// append the order key for cp into db
+	k, v, err := hc.appendOrder(cpAddr, orderKey)
 	if err != nil {
 		panic(err)
 	}
+	keys = append(keys, k)
+	values = append(values, v)
+	pos++
 
-	// append the order key for cp into db
-	err = hc.appendOrder(cpAddr, orderKey)
+	// for atomic
+	err = hc.LocalDB.MultiPut(keys, values)
 	if err != nil {
 		panic(err)
 	}
 
 	// response
 	c.JSON(http.StatusOK, gin.H{
-		"to":   "0x1234",
+		//"to":   "0x1234",
 		"cost": cost64, // credit = eth*1000000
 	})
 }
@@ -497,7 +518,7 @@ func (hc *HandlerCore) getCpOrders(cpAddr string) ([]OrderInfo, error) {
 }
 
 // append an order key for a cp
-func (hc *HandlerCore) appendOrder(cpAddr string, orderKey string) error {
+func (hc *HandlerCore) appendOrder(cpAddr string, orderKey string) (k []byte, v []byte, err error) {
 	// 'cp' _ 'address' as cp key
 	cpordersKey := fmt.Sprintf("cp_orders_%s", cpAddr)
 
@@ -530,16 +551,16 @@ func (hc *HandlerCore) appendOrder(cpAddr string, orderKey string) error {
 		panic(err)
 	}
 
-	// put new order list for cp
-	err = hc.LocalDB.Put([]byte(cpordersKey), data)
-	if err != nil {
-		panic(err)
-	}
+	// return new order list for cp
+	// err = hc.LocalDB.Put([]byte(cpordersKey), data)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	return nil
+	return []byte(cpordersKey), data, nil
 }
 
-// record credit
+// user record credit with txHash
 // value uint: eth
 // crecit = eth * 1000000
 func (hc *HandlerCore) Pay(c *gin.Context) {
@@ -549,6 +570,8 @@ func (hc *HandlerCore) Pay(c *gin.Context) {
 	txHash := c.PostForm("txHash")
 
 	//todo: verify txHash
+	txConfirmed := false
+	_ = txConfirmed
 
 	value64, err := utils.StringToUint64(value)
 	if err != nil {
@@ -561,7 +584,6 @@ func (hc *HandlerCore) Pay(c *gin.Context) {
 	creKey := fmt.Sprintf("cre_%s", from)
 	logger.Debug("credit key:", creKey)
 
-	// todo: this credit update must be done after txHash confirmed
 	// update credit for this account
 	var old string
 	// get old credit from db, if key not found, init with 0
@@ -739,7 +761,6 @@ func (hc *HandlerCore) QueryCredit(c *gin.Context) {
 			credit: credit,
 		})
 
-	// todo: update cp's all orders, update settled state
 	case "cp":
 
 		// settle all orders of this cp, set order state
@@ -752,22 +773,56 @@ func (hc *HandlerCore) QueryCredit(c *gin.Context) {
 
 		// deal with each order
 		for _, o := range orderList {
-			// todo: check if order expired
+			// for multiput
+			keys := [][]byte{}
+			values := [][]byte{}
+			pos := 0
+
+			// get current time stamp
+			now := time.Now().Unix()
+			logger.Debug("current timestamp:", now)
+			expire := o.Expire
+			expire64, err := utils.StringToInt64(expire)
+			if err != nil {
+				panic(err)
+			}
+			logger.Debug("expire timestamp:", expire64)
+
+			// todo: if order not expired, skip it
+			// if expire64 < now {
+			// 	continue
+			// }
 
 			// if not settled
 			if !o.Settled {
 				// add order's cost into cp's credit
-				hc.addCredit(o.CPAddr, o.Cost)
+				k, v, err := hc.addCredit(o.CPAddr, o.Cost)
+				if err != nil {
+					panic(err)
+				}
+				keys = append(keys, k)
+				values = append(values, v)
+				pos++
 				// set order's settled state to true
-				hc.setOrderSettled([]byte(o.OrderKey), true)
+				k, v, err = hc.setOrderSettled([]byte(o.OrderKey), true)
+				if err != nil {
+					panic(err)
+				}
+				keys = append(keys, k)
+				values = append(values, v)
+				pos++
+
+				hc.LocalDB.MultiPut(keys, values)
 			}
 		}
 
-		// get credit from db, if key not found, init with 0
+		// get credit from db, if key not found, response 0
 		data, err := hc.LocalDB.Get([]byte(creKey))
 		if err != nil {
 			if err.Error() == "Key not found" {
-				c.JSON(http.StatusOK, "account not found")
+				c.JSON(http.StatusOK, gin.H{
+					"credit": "0",
+				})
 				return
 			} else {
 				panic(err)
@@ -780,15 +835,15 @@ func (hc *HandlerCore) QueryCredit(c *gin.Context) {
 
 		// response credit
 		c.JSON(http.StatusOK, gin.H{
-			credit: credit,
+			"credit": credit,
 		})
 	default:
-		c.JSON(http.StatusOK, "error role in request")
+		c.JSON(http.StatusOK, gin.H{"res": "error role in request"})
 	}
 }
 
-// add an account with some credit
-func (hc *HandlerCore) addCredit(addr string, credit uint64) error {
+// add an account with some credit, return k,v for db write
+func (hc *HandlerCore) addCredit(addr string, credit uint64) (k []byte, v []byte, err error) {
 
 	// credit key: cre_*
 	creKey := fmt.Sprintf("cre_%s", addr)
@@ -802,7 +857,7 @@ func (hc *HandlerCore) addCredit(addr string, credit uint64) error {
 		if err.Error() == "Key not found" {
 			old = "0"
 		} else {
-			return err
+			return nil, nil, err
 		}
 	} else {
 		old = string(data)
@@ -813,7 +868,7 @@ func (hc *HandlerCore) addCredit(addr string, credit uint64) error {
 	// accumulate credit
 	old64, err := utils.StringToUint64(old)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	new64 := old64 + credit
 	new := utils.Uint64ToString(new64)
@@ -821,26 +876,27 @@ func (hc *HandlerCore) addCredit(addr string, credit uint64) error {
 	logger.Debug("new credit:", new)
 
 	// update credit for this account
-	err = hc.LocalDB.Put([]byte(creKey), []byte(new))
-	if err != nil {
-		return err
-	}
+	// err = hc.LocalDB.Put([]byte(creKey), []byte(new))
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
 
-	return nil
+	// return k v for multiput
+	return []byte(creKey), []byte(new), nil
 }
 
 // set an order's settled state with key
-func (hc *HandlerCore) setOrderSettled(key []byte, settled bool) error {
+func (hc *HandlerCore) setOrderSettled(key []byte, settled bool) (k []byte, v []byte, err error) {
 	// get order info with key
 	data, err := hc.LocalDB.Get([]byte(key))
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	order := OrderInfo{}
 	err = json.Unmarshal(data, &order)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	// set order's settled state
@@ -849,16 +905,17 @@ func (hc *HandlerCore) setOrderSettled(key []byte, settled bool) error {
 	// marshal new order
 	data, err = json.Marshal(order)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	// update order info
-	err = hc.LocalDB.Put(key, data)
-	if err != nil {
-		return err
-	}
+	// err = hc.LocalDB.Put(key, data)
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
 
-	return nil
+	// return k,v for db
+	return key, data, nil
 }
 
 // for cross domain

@@ -272,7 +272,7 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	logger.Debugf("old order id:%s", orderID)
 
 	// 'user address' _ 'order id' as order key
-	orderKey := fmt.Sprintf("%s_%s", userAddr, orderID)
+	orderKey := fmt.Sprintf("order_%s_%s", userAddr, orderID)
 	logger.Debugf("order key:%s", orderKey)
 
 	// construct new order info
@@ -441,7 +441,7 @@ func (hc *HandlerCore) getUserOrders(userAddr string) ([]OrderInfo, error) {
 	}
 	for i := uint64(0); i < num; i++ {
 		// make key
-		key := fmt.Sprintf("%s_%d", userAddr, i)
+		key := fmt.Sprintf("order_%s_%d", userAddr, i)
 		logger.Debug("order key:", key)
 		// get order
 		data, err := hc.LocalDB.Get([]byte(key))
@@ -638,7 +638,7 @@ func (hc *HandlerCore) PayHandler(c *gin.Context) {
 	}
 
 	// make payinfo's key: account_pi_id
-	piKey := fmt.Sprintf("%s_pi_%s", from, oldID)
+	piKey := fmt.Sprintf("pi_%s_%s", from, oldID)
 	logger.Debug("payinfo key:", piKey)
 	// record pay info into db
 	// payInfo: from, value, credit, txHash, txConfirmed, creditSaved
@@ -666,7 +666,7 @@ func (hc *HandlerCore) PayHandler(c *gin.Context) {
 }
 
 // query pay infos
-func (hc *HandlerCore) QueryPayHandler(c *gin.Context) {
+func (hc *HandlerCore) ListPayHandler(c *gin.Context) {
 	addr := c.Query("addr")
 
 	piList, err := hc.getPayInfoList(addr)
@@ -703,7 +703,7 @@ func (hc *HandlerCore) getPayInfoList(addr string) ([]PayInfo, error) {
 	}
 	for i := uint64(0); i < num; i++ {
 		// make payInfo key
-		piKey := fmt.Sprintf("%s_pi_%d", addr, i)
+		piKey := fmt.Sprintf("pi_%s_%d", addr, i)
 		logger.Debug("order key:", piKey)
 		// get order
 		data, err := hc.LocalDB.Get([]byte(piKey))

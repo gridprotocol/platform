@@ -16,8 +16,9 @@ type HandlerCore struct {
 }
 
 // pay info when recharge credit, need to be stored in db
-type CreditInfo struct {
-	CIKey  string `json:"CreditInfoKey"`
+type PayInfo struct {
+	PIKey  string `json:"PayInfoKey"`
+	TIKey  string `json:"TransferInfoKey"`
 	Owner  string `json:"Owner"`
 	Credit uint64 `json:"Credit"`
 	TxHash string `json:"TxHash"`
@@ -294,7 +295,7 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	order.Cost = cost64
 
 	// get credit
-	credit, err := hc.getCredit(userAddr)
+	credit, err := hc.queryCredit(userAddr)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"error": err})
 		return
@@ -414,7 +415,7 @@ func (hc *HandlerCore) ListOrderHandler(c *gin.Context) {
 // user record credit with txHash
 // value uint: eth
 // credit = eth * 1000000
-func (hc *HandlerCore) CreditHandler(c *gin.Context) {
+func (hc *HandlerCore) PayHandler(c *gin.Context) {
 	// get key of a transfer
 	transkey := c.PostForm("transkey")
 	transfer := TransferInfo{}
@@ -460,7 +461,7 @@ func (hc *HandlerCore) CreditHandler(c *gin.Context) {
 	credit := value64 * 1000000
 
 	// get credit
-	oldCredit, err := hc.getCredit(from)
+	oldCredit, err := hc.queryCredit(from)
 	if err != nil {
 		if err.Error() == "Key not found" {
 			oldCredit = "0"
@@ -493,7 +494,7 @@ func (hc *HandlerCore) CreditHandler(c *gin.Context) {
 	values = append(values, []byte(new))
 
 	// get payinfo id for this account
-	oldID, err := hc.getCreditInfoID(from)
+	oldID, err := hc.getPayInfoID(from)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"error": err})
 		return
@@ -508,36 +509,38 @@ func (hc *HandlerCore) CreditHandler(c *gin.Context) {
 		return
 	}
 	newID := utils.Uint64ToString(oldID64 + 1)
-	logger.Debug("new creditinfo id:", newID)
+	logger.Debug("new payinfo id:", newID)
 	// update payinfo id for this account
-	idKey := CreditInfoIDKey(from)
+	idKey := PayInfoIDKey(from)
 	keys = append(keys, idKey)
 	values = append(values, []byte(newID))
 
 	// make payinfo's key
-	ciKey := CreditInfoKey(from, oldID)
-	logger.Debugf("creditinfo key:%s", ciKey)
+	piKey := PayInfoKey(from, oldID)
+	logger.Debugf("payinfo key:%s", piKey)
 
-	// record credit info into db
-	creInfo := CreditInfo{
-		CIKey:  string(ciKey),
+	// record pay info into db
+	payInfo := PayInfo{
+		PIKey:  string(piKey),
+		TIKey:  transkey, // which transfer is used for this credit
 		Owner:  from,
 		Credit: credit,
 		TxHash: txHash,
 	}
-	// marshal to bytes
-	data, err = json.Marshal(creInfo)
+	// marshal pi to bytes
+	data, err = json.Marshal(payInfo)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"error": err})
 		return
 	}
 	// record payinfo data
-	keys = append(keys, ciKey)
+	keys = append(keys, piKey)
 	values = append(values, data)
 
-	// todo: modify txinfo's state(credit saved)
+	// modify transferinfo's state(tx confirmed, credit saved)
 	transfer.TxConfirmed = true
 	transfer.CreditSaved = true
+
 	// marshal to bytes
 	data, err = json.Marshal(transfer)
 	if err != nil {
@@ -551,14 +554,14 @@ func (hc *HandlerCore) CreditHandler(c *gin.Context) {
 	hc.LocalDB.MultiPut(keys, values)
 
 	// response
-	c.JSON(http.StatusOK, gin.H{"response": "credit ok"})
+	c.JSON(http.StatusOK, gin.H{"response": "pay ok"})
 }
 
 // query pay infos
-func (hc *HandlerCore) ListCreditHandler(c *gin.Context) {
+func (hc *HandlerCore) ListPayHandler(c *gin.Context) {
 	addr := c.Query("addr")
 
-	piList, err := hc.getCreditInfoList(addr)
+	piList, err := hc.getPayInfoList(addr)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"error": err})
 		return
@@ -578,7 +581,7 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 	switch role {
 	case "user":
 		// get old credit from db, if key not found, init with 0
-		credit, err := hc.getCredit(address)
+		credit, err := hc.queryCredit(address)
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{"error": err})
 			return
@@ -648,7 +651,7 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 		}
 
 		// get credit from db, if key not found, response 0
-		credit, err = hc.getCredit(address)
+		credit, err = hc.queryCredit(address)
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{"error": err})
 			return

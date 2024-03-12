@@ -16,9 +16,9 @@ type HandlerCore struct {
 }
 
 // pay info when recharge credit, need to be stored in db
-type PayInfo struct {
-	PIKey  string `json:"PayInfoKey"`
-	Payer  string `json:"Payer"`
+type CreditInfo struct {
+	CIKey  string `json:"CreditInfoKey"`
+	Owner  string `json:"Owner"`
 	Credit uint64 `json:"Credit"`
 	TxHash string `json:"TxHash"`
 }
@@ -394,7 +394,7 @@ func (hc *HandlerCore) ListOrderHandler(c *gin.Context) {
 // user record credit with txHash
 // value uint: eth
 // crecit = eth * 1000000
-func (hc *HandlerCore) PayHandler(c *gin.Context) {
+func (hc *HandlerCore) CreditHandler(c *gin.Context) {
 	from := c.PostForm("from")
 	//to := c.PostForm("to")
 	value := c.PostForm("value")
@@ -443,7 +443,7 @@ func (hc *HandlerCore) PayHandler(c *gin.Context) {
 	values = append(values, []byte(new))
 
 	// get payinfo id for this account
-	oldID, err := hc.getPayInfoID(from)
+	oldID, err := hc.getCreditInfoID(from)
 	if err != nil {
 		panic(err)
 	}
@@ -458,28 +458,28 @@ func (hc *HandlerCore) PayHandler(c *gin.Context) {
 	newID := utils.Uint64ToString(oldID64 + 1)
 	logger.Debug("new payinfo id:", newID)
 	// update payinfo id for this account
-	idKey := PayInfoIDKey(from)
+	idKey := CreditInfoIDKey(from)
 	keys = append(keys, idKey)
 	values = append(values, []byte(newID))
 
 	// make payinfo's key
-	piKey := PayInfoKey(from, oldID)
-	logger.Debugf("payinfo key:%s", piKey)
+	ciKey := CreditInfoKey(from, oldID)
+	logger.Debugf("payinfo key:%s", ciKey)
 
 	// record pay info into db
-	payInfo := PayInfo{
-		PIKey:  string(piKey),
-		Payer:  from,
+	creInfo := CreditInfo{
+		CIKey:  string(ciKey),
+		Owner:  from,
 		Credit: credit,
 		TxHash: txHash,
 	}
 	// marshal to bytes
-	data, err := json.Marshal(payInfo)
+	data, err := json.Marshal(creInfo)
 	if err != nil {
 		panic(err)
 	}
 	// record payinfo data
-	keys = append(keys, piKey)
+	keys = append(keys, ciKey)
 	values = append(values, data)
 
 	// multiput
@@ -492,10 +492,10 @@ func (hc *HandlerCore) PayHandler(c *gin.Context) {
 }
 
 // query pay infos
-func (hc *HandlerCore) ListPayHandler(c *gin.Context) {
+func (hc *HandlerCore) ListCreditHandler(c *gin.Context) {
 	addr := c.Query("addr")
 
-	piList, err := hc.getPayInfoList(addr)
+	piList, err := hc.getCreditInfoList(addr)
 	if err != nil {
 		panic(err)
 	}

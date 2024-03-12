@@ -15,8 +15,15 @@ func OrderIDKey(userAddr string) []byte {
 }
 
 // payinfo id key
-func PayInfoIDKey(userAddr string) []byte {
-	key := fmt.Sprintf("PAYINFO_ID_%s", userAddr)
+func CreditInfoIDKey(userAddr string) []byte {
+	key := fmt.Sprintf("CI_ID_%s", userAddr)
+	return []byte(key)
+}
+
+// key for payinfo, with user and id
+// PI_user_id
+func CreditInfoKey(userAddr string, id string) []byte {
+	key := fmt.Sprintf("CI_%s_%s", userAddr, id)
 	return []byte(key)
 }
 
@@ -43,13 +50,6 @@ func OrderListKey(cpAddr string) []byte {
 // CP_INFO_*
 func CPInfoKey(cpAddr string) []byte {
 	key := fmt.Sprintf("CP_INFO_%s", cpAddr)
-	return []byte(key)
-}
-
-// key for payinfo, with user and id
-// PI_user_id
-func PayInfoKey(userAddr string, id string) []byte {
-	key := fmt.Sprintf("PI_%s_%s", userAddr, id)
 	return []byte(key)
 }
 
@@ -89,8 +89,8 @@ func (hc *HandlerCore) getOrderID(addr string) (string, error) {
 }
 
 // payinfo id key: user_*
-func (hc *HandlerCore) getPayInfoID(addr string) (string, error) {
-	key := PayInfoIDKey(addr)
+func (hc *HandlerCore) getCreditInfoID(addr string) (string, error) {
+	key := CreditInfoIDKey(addr)
 
 	var id string
 	data, err := hc.LocalDB.Get([]byte(key))
@@ -249,12 +249,12 @@ func (hc *HandlerCore) setTransferConfirmed(key []byte, confirmed bool) (k []byt
 	return key, data, nil
 }
 
-// get user's order list from db
-func (hc *HandlerCore) getPayInfoList(addr string) ([]PayInfo, error) {
-	piList := make([]PayInfo, 0, 100)
+// get user's credit list from db
+func (hc *HandlerCore) getCreditInfoList(addr string) ([]CreditInfo, error) {
+	ciList := make([]CreditInfo, 0, 100)
 
 	// get payinfo id
-	payID, err := hc.getPayInfoID(addr)
+	payID, err := hc.getCreditInfoID(addr)
 	if err != nil {
 		return nil, err
 	}
@@ -266,24 +266,24 @@ func (hc *HandlerCore) getPayInfoList(addr string) ([]PayInfo, error) {
 		panic(err)
 	}
 	for i := uint64(0); i < num; i++ {
-		// make payInfo key
-		piKey := PayInfoKey(addr, utils.Uint64ToString(i))
+		// make creditInfo key
+		piKey := CreditInfoKey(addr, utils.Uint64ToString(i))
 		logger.Debugf("order key:%s", piKey)
-		// get payinfo
+		// get creditinfo
 		data, err := hc.LocalDB.Get([]byte(piKey))
 		if err != nil {
 			return nil, err
 		}
-		pi := &PayInfo{}
-		err = json.Unmarshal(data, pi)
+		ci := &CreditInfo{}
+		err = json.Unmarshal(data, ci)
 		if err != nil {
 			return nil, err
 		}
-		piList = append(piList, *pi)
+		ciList = append(ciList, *ci)
 	}
 
 	// payinfo list
-	return piList, nil
+	return ciList, nil
 }
 
 // get order list for cp

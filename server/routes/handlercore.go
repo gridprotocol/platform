@@ -413,16 +413,43 @@ func (hc *HandlerCore) ListOrderHandler(c *gin.Context) {
 
 // user record credit with txHash
 // value uint: eth
-// crecit = eth * 1000000
+// credit = eth * 1000000
 func (hc *HandlerCore) CreditHandler(c *gin.Context) {
-	from := c.PostForm("from")
-	//to := c.PostForm("to")
-	value := c.PostForm("value")
-	txHash := c.PostForm("txHash")
+	// get key of a transfer
+	transkey := c.PostForm("transkey")
+	transfer := TransferInfo{}
+	// get transfer info
+	data, err := hc.LocalDB.Get([]byte(transkey))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
+	}
 
-	//todo: verify txHash
-	txConfirmed := false
-	_ = txConfirmed
+	// unmarshal transfer info
+	err = json.Unmarshal(data, &transfer)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
+	}
+
+	// read field
+	from := transfer.From
+	value := transfer.Value
+	txHash := transfer.TxHash
+	confirmed := transfer.TxConfirmed
+	saved := transfer.CreditSaved
+
+	// tx not confirmed
+	if !confirmed {
+		c.JSON(http.StatusOK, gin.H{"error": "tx of this transfer has not been confirmed on chain yet"})
+		return
+	}
+
+	// transfer already used
+	if saved {
+		c.JSON(http.StatusOK, gin.H{"error": "this transfer has been used for credit"})
+		return
+	}
 
 	value64, err := utils.StringToUint64(value)
 	if err != nil {
@@ -491,7 +518,7 @@ func (hc *HandlerCore) CreditHandler(c *gin.Context) {
 	ciKey := CreditInfoKey(from, oldID)
 	logger.Debugf("creditinfo key:%s", ciKey)
 
-	// record pay info into db
+	// record credit info into db
 	creInfo := CreditInfo{
 		CIKey:  string(ciKey),
 		Owner:  from,
@@ -499,7 +526,7 @@ func (hc *HandlerCore) CreditHandler(c *gin.Context) {
 		TxHash: txHash,
 	}
 	// marshal to bytes
-	data, err := json.Marshal(creInfo)
+	data, err = json.Marshal(creInfo)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"error": err})
 		return
@@ -508,10 +535,20 @@ func (hc *HandlerCore) CreditHandler(c *gin.Context) {
 	keys = append(keys, ciKey)
 	values = append(values, data)
 
+	// todo: modify txinfo's state(credit saved)
+	transfer.TxConfirmed = true
+	transfer.CreditSaved = true
+	// marshal to bytes
+	data, err = json.Marshal(transfer)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
+	}
+	keys = append(keys, []byte(transkey))
+	values = append(values, data)
+
 	// multiput
 	hc.LocalDB.MultiPut(keys, values)
-
-	// todo: modify txinfo's state(credit saved)
 
 	// response
 	c.JSON(http.StatusOK, gin.H{"response": "credit ok"})

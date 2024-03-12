@@ -63,27 +63,27 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 
 	// check input
 	if !isNumber(priCPU) {
-		c.JSON(http.StatusBadRequest, "price must be number")
+		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
 		return
 	}
 	if !isNumber(priGPU) {
-		c.JSON(http.StatusBadRequest, "price must be number")
+		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
 		return
 	}
 	if !isNumber(priMem) {
-		c.JSON(http.StatusBadRequest, "price must be number")
+		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
 		return
 	}
 	if !isNumber(priStore) {
-		c.JSON(http.StatusBadRequest, "price must be number")
+		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
 		return
 	}
 	if !isNumber(numStore) {
-		c.JSON(http.StatusBadRequest, "store space must be number")
+		c.JSON(http.StatusBadRequest, gin.H{"response": "store space must be number"})
 		return
 	}
 	if !isNumber(numMem) {
-		c.JSON(http.StatusBadRequest, "memory space must be number")
+		c.JSON(http.StatusBadRequest, gin.H{"response": "memory space must be number"})
 		return
 	}
 
@@ -105,7 +105,8 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 	// marshal into bytes
 	data, err := json.Marshal(info)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 
 	KEY := CPInfoKey(address)
@@ -113,20 +114,22 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 	// check if cp exists
 	b, err := hc.LocalDB.Has(KEY)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 	if b {
-		c.JSON(http.StatusOK, "cp already exist")
+		c.JSON(http.StatusOK, gin.H{"response": "cp already exist"})
 		return
 	}
 
 	// wallet address as key, info as valude
 	err = hc.LocalDB.Put(KEY, data)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 
-	c.JSON(http.StatusOK, "regist OK")
+	c.JSON(http.StatusOK, gin.H{"response": "regist OK"})
 }
 
 // handler for list cp nodes
@@ -149,7 +152,8 @@ func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 		return nil
 	})
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 
 	// response node list
@@ -182,34 +186,35 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 
 	// check input
 	if !isNumber(priCPU) {
-		c.JSON(http.StatusBadRequest, "price must be number")
+		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
 		return
 	}
 	if !isNumber(priGPU) {
-		c.JSON(http.StatusBadRequest, "price must be number")
+		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
 		return
 	}
 	if !isNumber(priMem) {
-		c.JSON(http.StatusBadRequest, "price must be number")
+		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
 		return
 	}
 	if !isNumber(priStore) {
-		c.JSON(http.StatusBadRequest, "price must be number")
+		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
 		return
 	}
 	if !isNumber(numStore) {
-		c.JSON(http.StatusBadRequest, "store space must be number")
+		c.JSON(http.StatusBadRequest, gin.H{"response": "store space must be number"})
 		return
 	}
 	if !isNumber(numMem) {
-		c.JSON(http.StatusBadRequest, "memory space must be number")
+		c.JSON(http.StatusBadRequest, gin.H{"response": "memory space must be number"})
 		return
 	}
 
 	// compute expire with duration and current time
 	expire, err := utils.DurToTS(dur)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 
 	// read cp name from db with cp address
@@ -219,22 +224,25 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	// check cp
 	b, err := hc.LocalDB.Has([]byte(cpkey))
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 	if !b {
-		c.JSON(http.StatusOK, "cp not found")
+		c.JSON(http.StatusOK, gin.H{"response": "cp not found"})
 		return
 	}
 	// read cp info
 	data, err := hc.LocalDB.Get([]byte(cpkey))
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 	// unmarshal data to CPInfo
 	cp := CPInfo{}
 	err = json.Unmarshal(data, &cp)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 	// get cp name and endpoint
 	cpName := cp.Name
@@ -244,7 +252,8 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	var orderID string
 	orderID, err = hc.getOrderID(userAddr)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 
 	logger.Debugf("old order id:%s", orderID)
@@ -276,7 +285,8 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	// calc credit cost of order
 	cost64, err := CalcCost(&order)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 	logger.Debug("credit cost:", cost64)
 
@@ -286,7 +296,8 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	// get credit
 	credit, err := hc.getCredit(userAddr)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 
 	logger.Debug("credit left:", credit)
@@ -294,10 +305,14 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	// check credit
 	credit64, err := utils.StringToUint64(credit)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 	if credit64 < cost64 {
-		c.JSON(http.StatusOK, "credit is not enough to pay this order,create order failed")
+		c.JSON(
+			http.StatusOK,
+			gin.H{"response": "credit is not enough to pay this order,create order failed"},
+		)
 		return
 	}
 
@@ -320,7 +335,8 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	// mashal order into bytes
 	data, err = json.Marshal(order)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 	// put order info into db
 	keys = append(keys, orderKey)
@@ -329,7 +345,8 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	// increase order id by 1
 	orderID64, err := utils.StringToUint64(orderID)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 	orderID64 += 1
 	orderID = utils.Uint64ToString(orderID64)
@@ -342,7 +359,8 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	// append the order key for cp into db
 	k, v, err := hc.appendOrder(cpAddr, string(orderKey))
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 	keys = append(keys, k)
 	values = append(values, v)
@@ -350,12 +368,12 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	// for atomic
 	err = hc.LocalDB.MultiPut(keys, values)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 
 	// response
 	c.JSON(http.StatusOK, gin.H{
-		//"to":   "0x1234",
 		"cost": cost64, // credit = eth*1000000
 	})
 }
@@ -376,15 +394,17 @@ func (hc *HandlerCore) ListOrderHandler(c *gin.Context) {
 	case "user":
 		orderList, err = hc.getUserOrders(addr)
 		if err != nil {
-			panic(err)
+			c.JSON(http.StatusOK, gin.H{"error": err})
+			return
 		}
 	case "cp":
 		orderList, err = hc.getCpOrders(addr)
 		if err != nil {
-			panic(err)
+			c.JSON(http.StatusOK, gin.H{"error": err})
+			return
 		}
 	default:
-		c.JSON(http.StatusOK, "error type in request")
+		c.JSON(http.StatusOK, gin.H{"response": "error type in request"})
 	}
 
 	// response order list
@@ -406,7 +426,8 @@ func (hc *HandlerCore) CreditHandler(c *gin.Context) {
 
 	value64, err := utils.StringToUint64(value)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 	// calc credit: eth * 10^6
 	credit := value64 * 1000000
@@ -417,7 +438,8 @@ func (hc *HandlerCore) CreditHandler(c *gin.Context) {
 		if err.Error() == "Key not found" {
 			oldCredit = "0"
 		} else {
-			panic(err)
+			c.JSON(http.StatusOK, gin.H{"error": err})
+			return
 		}
 	}
 
@@ -426,7 +448,8 @@ func (hc *HandlerCore) CreditHandler(c *gin.Context) {
 	// accumulate credit
 	old64, err := utils.StringToUint64(oldCredit)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 	new64 := old64 + credit
 	new := utils.Uint64ToString(new64)
@@ -445,18 +468,20 @@ func (hc *HandlerCore) CreditHandler(c *gin.Context) {
 	// get payinfo id for this account
 	oldID, err := hc.getCreditInfoID(from)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 
-	logger.Debug("old pay id:", oldID)
+	logger.Debug("old credit id:", oldID)
 
 	// update payinfo id
 	oldID64, err := utils.StringToUint64(oldID)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 	newID := utils.Uint64ToString(oldID64 + 1)
-	logger.Debug("new payinfo id:", newID)
+	logger.Debug("new creditinfo id:", newID)
 	// update payinfo id for this account
 	idKey := CreditInfoIDKey(from)
 	keys = append(keys, idKey)
@@ -464,7 +489,7 @@ func (hc *HandlerCore) CreditHandler(c *gin.Context) {
 
 	// make payinfo's key
 	ciKey := CreditInfoKey(from, oldID)
-	logger.Debugf("payinfo key:%s", ciKey)
+	logger.Debugf("creditinfo key:%s", ciKey)
 
 	// record pay info into db
 	creInfo := CreditInfo{
@@ -476,7 +501,8 @@ func (hc *HandlerCore) CreditHandler(c *gin.Context) {
 	// marshal to bytes
 	data, err := json.Marshal(creInfo)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 	// record payinfo data
 	keys = append(keys, ciKey)
@@ -488,7 +514,7 @@ func (hc *HandlerCore) CreditHandler(c *gin.Context) {
 	// todo: modify txinfo's state(credit saved)
 
 	// response
-	c.JSON(http.StatusOK, "pay ok")
+	c.JSON(http.StatusOK, gin.H{"response": "credit ok"})
 }
 
 // query pay infos
@@ -497,7 +523,8 @@ func (hc *HandlerCore) ListCreditHandler(c *gin.Context) {
 
 	piList, err := hc.getCreditInfoList(addr)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 
 	// response
@@ -516,13 +543,14 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 		// get old credit from db, if key not found, init with 0
 		credit, err := hc.getCredit(address)
 		if err != nil {
-			panic(err)
+			c.JSON(http.StatusOK, gin.H{"error": err})
+			return
 		}
 
 		logger.Debug("credit:", credit)
 
 		c.JSON(http.StatusOK, gin.H{
-			credit: credit,
+			"credit": credit,
 		})
 
 	case "cp":
@@ -531,7 +559,8 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 		// get cp's order list
 		orderList, err := hc.getCpOrders(address)
 		if err != nil {
-			panic(err)
+			c.JSON(http.StatusOK, gin.H{"error": err})
+			return
 		}
 
 		// deal with each order
@@ -546,7 +575,8 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 			expire := o.Expire
 			expire64, err := utils.StringToInt64(expire)
 			if err != nil {
-				panic(err)
+				c.JSON(http.StatusOK, gin.H{"error": err})
+				return
 			}
 			logger.Debug("expire timestamp:", expire64)
 
@@ -560,7 +590,8 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 				// add order's cost into cp's credit
 				k, v, err := hc.addCredit(o.CPAddr, o.Cost)
 				if err != nil {
-					panic(err)
+					c.JSON(http.StatusOK, gin.H{"error": err})
+					return
 				}
 				keys = append(keys, k)
 				values = append(values, v)
@@ -568,7 +599,8 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 				// set order's settled state to true
 				k, v, err = hc.setOrderSettled([]byte(o.OrderKey), true)
 				if err != nil {
-					panic(err)
+					c.JSON(http.StatusOK, gin.H{"error": err})
+					return
 				}
 				keys = append(keys, k)
 				values = append(values, v)
@@ -581,7 +613,8 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 		// get credit from db, if key not found, response 0
 		credit, err = hc.getCredit(address)
 		if err != nil {
-			panic(err)
+			c.JSON(http.StatusOK, gin.H{"error": err})
+			return
 		}
 		logger.Debug("credit:", credit)
 
@@ -590,7 +623,7 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 			"credit": credit,
 		})
 	default:
-		c.JSON(http.StatusOK, gin.H{"res": "error role in request"})
+		c.JSON(http.StatusOK, gin.H{"response": "error role in request"})
 	}
 }
 
@@ -613,11 +646,13 @@ func (hc *HandlerCore) TransferHandler(c *gin.Context) {
 	// for id update
 	id, err := hc.getTransferID(from)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 	id64, err := utils.StringToUint64(id)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 	id64++
 	newID := utils.Uint64ToString(id64)
@@ -641,7 +676,8 @@ func (hc *HandlerCore) TransferHandler(c *gin.Context) {
 	}
 	data, err := json.Marshal(ti)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 	// record ti
 	keys = append(keys, tiKey)
@@ -650,7 +686,7 @@ func (hc *HandlerCore) TransferHandler(c *gin.Context) {
 	// multiput
 	hc.LocalDB.MultiPut(keys, values)
 
-	c.JSON(http.StatusOK, gin.H{"res": "transfer ok"})
+	c.JSON(http.StatusOK, gin.H{"response": "transfer ok"})
 }
 
 // list all transfer info about an user
@@ -662,7 +698,8 @@ func (hc *HandlerCore) ListTransferHandler(c *gin.Context) {
 	// transfer list for response
 	transList, err := hc.getUserTransfers(addr)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 
 	c.JSON(http.StatusOK, transList)
@@ -674,7 +711,8 @@ func (hc *HandlerCore) RefreshTransferHandler(c *gin.Context) {
 
 	transfers, err := hc.getUserTransfers(userAddr)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusOK, gin.H{"error": err})
+		return
 	}
 
 	// for atomic
@@ -691,13 +729,15 @@ func (hc *HandlerCore) RefreshTransferHandler(c *gin.Context) {
 		// check for now
 		confirmed, err := checkTxConfirmed(transfer.TxHash)
 		if err != nil {
-			panic(err)
+			c.JSON(http.StatusOK, gin.H{"error": err})
+			return
 		}
 
 		if confirmed {
 			k, v, err := hc.setTransferConfirmed([]byte(transfer.TIKey), true)
 			if err != nil {
-				panic(err)
+				c.JSON(http.StatusOK, gin.H{"error": err})
+				return
 			}
 			// k,v
 			keys = append(keys, k)

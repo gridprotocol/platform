@@ -78,7 +78,7 @@ func (hc *HandlerCore) getOrderID(addr string) (string, error) {
 		if err.Error() == "Key not found" {
 			id = "0"
 		} else {
-			panic(err)
+			return "", err
 		}
 	} else {
 		logger.Debugf("data:%s", data)
@@ -99,7 +99,7 @@ func (hc *HandlerCore) getCreditInfoID(addr string) (string, error) {
 		if err.Error() == "Key not found" {
 			id = "0"
 		} else {
-			panic(err)
+			return "", err
 		}
 	} else {
 		logger.Debugf("data:%s", data)
@@ -120,7 +120,7 @@ func (hc *HandlerCore) getTransferID(addr string) (string, error) {
 		if err.Error() == "Key not found" {
 			id = "0"
 		} else {
-			panic(err)
+			return "", err
 		}
 	} else {
 		logger.Debugf("data:%s", data)
@@ -159,7 +159,7 @@ func (hc *HandlerCore) getUserTransfers(userAddr string) ([]TransferInfo, error)
 	// get transfer id
 	transID, err := hc.getTransferID(userAddr)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	logger.Debug("user's transfer id:", transID)
@@ -167,7 +167,7 @@ func (hc *HandlerCore) getUserTransfers(userAddr string) ([]TransferInfo, error)
 	// number of transfers
 	num, err := utils.StringToUint64(transID)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	for i := uint64(0); i < num; i++ {
 		// make key: trans_user_id
@@ -263,7 +263,7 @@ func (hc *HandlerCore) getCreditInfoList(addr string) ([]CreditInfo, error) {
 	// number of order
 	num, err := utils.StringToUint64(payID)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	for i := uint64(0); i < num; i++ {
 		// make creditInfo key
@@ -323,12 +323,12 @@ func (hc *HandlerCore) getCpOrders(cpAddr string) ([]OrderInfo, error) {
 		// get order
 		data, err := hc.LocalDB.Get([]byte(key))
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 		order := OrderInfo{}
 		err = json.Unmarshal(data, &order)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 		orderList = append(orderList, order)
 	}
@@ -343,7 +343,7 @@ func (hc *HandlerCore) getUserOrders(userAddr string) ([]OrderInfo, error) {
 	// get order id, key: user_*
 	orderID, err := hc.getOrderID(userAddr)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	logger.Debug("user's order id:", orderID)
@@ -351,7 +351,7 @@ func (hc *HandlerCore) getUserOrders(userAddr string) ([]OrderInfo, error) {
 	// number of order equal to order id
 	num, err := utils.StringToUint64(orderID)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	for i := uint64(0); i < num; i++ {
 		// make key
@@ -445,7 +445,7 @@ func (hc *HandlerCore) appendOrder(cpAddr string, orderKey string) (k []byte, v 
 		if err.Error() == "Key not found" {
 			data = []byte{}
 		} else {
-			panic(err)
+			return nil, nil, err
 		}
 	}
 
@@ -453,7 +453,7 @@ func (hc *HandlerCore) appendOrder(cpAddr string, orderKey string) (k []byte, v 
 	if len(data) != 0 {
 		err = json.Unmarshal(data, &orders)
 		if err != nil {
-			panic(err)
+			return nil, nil, err
 		}
 	}
 
@@ -462,7 +462,7 @@ func (hc *HandlerCore) appendOrder(cpAddr string, orderKey string) (k []byte, v 
 
 	data, err = json.Marshal(orders)
 	if err != nil {
-		panic(err)
+		return nil, nil, err
 	}
 
 	// return k,v for multiput

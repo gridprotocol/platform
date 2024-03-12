@@ -222,6 +222,33 @@ func (hc *HandlerCore) setOrderSettled(key []byte, settled bool) (k []byte, v []
 	return key, data, nil
 }
 
+// set transfer confirmed state
+func (hc *HandlerCore) setTransferConfirmed(key []byte, confirmed bool) (k []byte, v []byte, err error) {
+	// get transfer info with key
+	data, err := hc.LocalDB.Get([]byte(key))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	ti := TransferInfo{}
+	err = json.Unmarshal(data, &ti)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// set order's settled state
+	ti.TxConfirmed = confirmed
+
+	// marshal new order
+	data, err = json.Marshal(ti)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// return k,v for db
+	return key, data, nil
+}
+
 // get user's order list from db
 func (hc *HandlerCore) getPayInfoList(addr string) ([]PayInfo, error) {
 	piList := make([]PayInfo, 0, 100)

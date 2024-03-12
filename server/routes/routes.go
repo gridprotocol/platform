@@ -106,4 +106,5 @@ func (r Routes) registerAll(db *kv.Database) {
 	// transfer
 	r.POST("/transfer", hc.TransferHandler)
 	r.GET("/listtransfer", hc.ListTransferHandler)
+	r.POST("/refreshtransfer", hc.RefreshTransferHandler)
 }

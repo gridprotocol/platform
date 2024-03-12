@@ -668,6 +668,49 @@ func (hc *HandlerCore) ListTransferHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, transList)
 }
 
+// refresh all transfers of an user, check transfers' confirmed state
+func (hc *HandlerCore) RefreshTransferHandler(c *gin.Context) {
+	userAddr := c.Query("address")
+
+	transfers, err := hc.getUserTransfers(userAddr)
+	if err != nil {
+		panic(err)
+	}
+
+	// for atomic
+	keys := [][]byte{}
+	values := [][]byte{}
+
+	// check all transfers for confirm
+	for _, transfer := range transfers {
+		// if this transfer already confirmed, skip
+		if transfer.TxConfirmed {
+			continue
+		}
+
+		// check for now
+		confirmed, err := checkTxConfirmed(transfer.TxHash)
+		if err != nil {
+			panic(err)
+		}
+
+		if confirmed {
+			k, v, err := hc.setTransferConfirmed([]byte(transfer.TIKey), true)
+			if err != nil {
+				panic(err)
+			}
+			// k,v
+			keys = append(keys, k)
+			values = append(values, v)
+		}
+	}
+
+	// multi put all k,v
+	hc.LocalDB.MultiPut(keys, values)
+
+	c.JSON(http.StatusOK, gin.H{"response": "refresh transfer ok"})
+}
+
 // for cross domain
 func cors() gin.HandlerFunc {
 	return func(c *gin.Context) {

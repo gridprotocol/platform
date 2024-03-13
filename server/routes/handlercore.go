@@ -20,7 +20,7 @@ type PayInfo struct {
 	PIKey  string `json:"PayInfoKey"`
 	TIKey  string `json:"TransferInfoKey"`
 	Owner  string `json:"Owner"`
-	Credit uint64 `json:"Credit"`
+	Credit int64  `json:"Credit"`
 	TxHash string `json:"TxHash"`
 }
 
@@ -106,7 +106,7 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 	// marshal into bytes
 	data, err := json.Marshal(info)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -115,7 +115,7 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 	// check if cp exists
 	b, err := hc.LocalDB.Has(KEY)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 	if b {
@@ -126,7 +126,7 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 	// wallet address as key, info as valude
 	err = hc.LocalDB.Put(KEY, data)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -153,7 +153,7 @@ func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 		return nil
 	})
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -214,7 +214,7 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	// compute expire with duration and current time
 	expire, err := utils.DurToTS(dur)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -225,7 +225,7 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	// check cp
 	b, err := hc.LocalDB.Has([]byte(cpkey))
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 	if !b {
@@ -235,14 +235,14 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	// read cp info
 	data, err := hc.LocalDB.Get([]byte(cpkey))
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 	// unmarshal data to CPInfo
 	cp := CPInfo{}
 	err = json.Unmarshal(data, &cp)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 	// get cp name and endpoint
@@ -253,7 +253,7 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	var orderID string
 	orderID, err = hc.getOrderID(userAddr)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -283,10 +283,12 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 		Settled:  false,
 	}
 
+	logger.Debug("GPU price:", order.PriGPU)
+
 	// calc credit cost of order
 	cost64, err := CalcCost(&order)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 	logger.Debug("credit cost:", cost64)
@@ -297,16 +299,16 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	// get credit
 	credit, err := hc.queryCredit(userAddr)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 
 	logger.Debug("credit left:", credit)
 
 	// check credit
-	credit64, err := utils.StringToUint64(credit)
+	credit64, err := utils.StringToInt64(credit)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 	if credit64 < cost64 {
@@ -323,7 +325,7 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 
 	// update user's credit
 	credit64 = credit64 - cost64
-	newCredit := utils.Uint64ToString(credit64)
+	newCredit := utils.Int64ToString(credit64)
 	logger.Debug("new credit after createorder:", newCredit)
 
 	// update user's credit in db
@@ -336,7 +338,7 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	// mashal order into bytes
 	data, err = json.Marshal(order)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 	// put order info into db
@@ -344,13 +346,13 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	values = append(values, data)
 
 	// increase order id by 1
-	orderID64, err := utils.StringToUint64(orderID)
+	orderID64, err := utils.StringToInt64(orderID)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 	orderID64 += 1
-	orderID = utils.Uint64ToString(orderID64)
+	orderID = utils.Int64ToString(orderID64)
 	logger.Debugf("new order id:%s", orderID)
 	// update order id
 	idKey := OrderIDKey(userAddr)
@@ -360,7 +362,7 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	// append the order key for cp into db
 	k, v, err := hc.appendOrder(cpAddr, string(orderKey))
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 	keys = append(keys, k)
@@ -369,7 +371,7 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	// for atomic
 	err = hc.LocalDB.MultiPut(keys, values)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -395,13 +397,13 @@ func (hc *HandlerCore) ListOrderHandler(c *gin.Context) {
 	case "user":
 		orderList, err = hc.getUserOrders(addr)
 		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err})
+			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 			return
 		}
 	case "cp":
 		orderList, err = hc.getCpOrders(addr)
 		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err})
+			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 			return
 		}
 	default:
@@ -422,14 +424,14 @@ func (hc *HandlerCore) PayHandler(c *gin.Context) {
 	// get transfer info
 	data, err := hc.LocalDB.Get([]byte(transkey))
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 
 	// unmarshal transfer info
 	err = json.Unmarshal(data, &transfer)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -452,9 +454,9 @@ func (hc *HandlerCore) PayHandler(c *gin.Context) {
 		return
 	}
 
-	value64, err := utils.StringToUint64(value)
+	value64, err := utils.StringToInt64(value)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 	// calc credit: eth * 10^6
@@ -466,7 +468,7 @@ func (hc *HandlerCore) PayHandler(c *gin.Context) {
 		if err.Error() == "Key not found" {
 			oldCredit = "0"
 		} else {
-			c.JSON(http.StatusOK, gin.H{"error": err})
+			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 			return
 		}
 	}
@@ -474,13 +476,13 @@ func (hc *HandlerCore) PayHandler(c *gin.Context) {
 	logger.Debug("old credit:", oldCredit)
 
 	// accumulate credit
-	old64, err := utils.StringToUint64(oldCredit)
+	old64, err := utils.StringToInt64(oldCredit)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 	new64 := old64 + credit
-	new := utils.Uint64ToString(new64)
+	new := utils.Int64ToString(new64)
 
 	logger.Debug("new credit:", new)
 
@@ -496,19 +498,19 @@ func (hc *HandlerCore) PayHandler(c *gin.Context) {
 	// get payinfo id for this account
 	oldID, err := hc.getPayInfoID(from)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 
 	logger.Debug("old credit id:", oldID)
 
 	// update payinfo id
-	oldID64, err := utils.StringToUint64(oldID)
+	oldID64, err := utils.StringToInt64(oldID)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
-	newID := utils.Uint64ToString(oldID64 + 1)
+	newID := utils.Int64ToString(oldID64 + 1)
 	logger.Debug("new payinfo id:", newID)
 	// update payinfo id for this account
 	idKey := PayInfoIDKey(from)
@@ -530,7 +532,7 @@ func (hc *HandlerCore) PayHandler(c *gin.Context) {
 	// marshal pi to bytes
 	data, err = json.Marshal(payInfo)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 	// record payinfo data
@@ -544,7 +546,7 @@ func (hc *HandlerCore) PayHandler(c *gin.Context) {
 	// marshal to bytes
 	data, err = json.Marshal(transfer)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 	keys = append(keys, []byte(transkey))
@@ -563,7 +565,7 @@ func (hc *HandlerCore) ListPayHandler(c *gin.Context) {
 
 	piList, err := hc.getPayInfoList(addr)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -583,7 +585,7 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 		// get old credit from db, if key not found, init with 0
 		credit, err := hc.queryCredit(address)
 		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err})
+			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 			return
 		}
 
@@ -599,7 +601,7 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 		// get cp's order list
 		orderList, err := hc.getCpOrders(address)
 		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err})
+			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 			return
 		}
 
@@ -615,7 +617,7 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 			expire := o.Expire
 			expire64, err := utils.StringToInt64(expire)
 			if err != nil {
-				c.JSON(http.StatusOK, gin.H{"error": err})
+				c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 				return
 			}
 			logger.Debug("expire timestamp:", expire64)
@@ -630,7 +632,7 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 				// add order's cost into cp's credit
 				k, v, err := hc.addCredit(o.CPAddr, o.Cost)
 				if err != nil {
-					c.JSON(http.StatusOK, gin.H{"error": err})
+					c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 					return
 				}
 				keys = append(keys, k)
@@ -639,7 +641,7 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 				// set order's settled state to true
 				k, v, err = hc.setOrderSettled([]byte(o.OrderKey), true)
 				if err != nil {
-					c.JSON(http.StatusOK, gin.H{"error": err})
+					c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 					return
 				}
 				keys = append(keys, k)
@@ -653,7 +655,7 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 		// get credit from db, if key not found, response 0
 		credit, err = hc.queryCredit(address)
 		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err})
+			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 			return
 		}
 		logger.Debug("credit:", credit)
@@ -686,16 +688,16 @@ func (hc *HandlerCore) TransferHandler(c *gin.Context) {
 	// for id update
 	id, err := hc.getTransferID(from)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
-	id64, err := utils.StringToUint64(id)
+	id64, err := utils.StringToInt64(id)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 	id64++
-	newID := utils.Uint64ToString(id64)
+	newID := utils.Int64ToString(id64)
 	// transfer id key
 	idKey := TransferIDKey(from)
 	// update transfer id
@@ -716,7 +718,7 @@ func (hc *HandlerCore) TransferHandler(c *gin.Context) {
 	}
 	data, err := json.Marshal(ti)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 	// record ti
@@ -738,7 +740,7 @@ func (hc *HandlerCore) ListTransferHandler(c *gin.Context) {
 	// transfer list for response
 	transList, err := hc.getUserTransfers(addr)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -751,7 +753,7 @@ func (hc *HandlerCore) RefreshTransferHandler(c *gin.Context) {
 
 	transfers, err := hc.getUserTransfers(userAddr)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err})
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -769,14 +771,14 @@ func (hc *HandlerCore) RefreshTransferHandler(c *gin.Context) {
 		// check for now
 		confirmed, err := checkTxConfirmed(transfer.TxHash)
 		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err})
+			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 			return
 		}
 
 		if confirmed {
 			k, v, err := hc.setTransferConfirmed([]byte(transfer.TIKey), true)
 			if err != nil {
-				c.JSON(http.StatusOK, gin.H{"error": err})
+				c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 				return
 			}
 			// k,v

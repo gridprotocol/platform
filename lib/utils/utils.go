@@ -69,6 +69,11 @@ func StringToUint64(s string) (uint64, error) {
 	return u, nil
 }
 
+func Uint64ToString(u uint64) string {
+	res := strconv.FormatUint(u, 10) //uint64转字符串
+	return res
+}
+
 // string to int64
 func StringToInt64(s string) (int64, error) {
 	u, err := strconv.ParseInt(s, 10, 64)
@@ -79,7 +84,7 @@ func StringToInt64(s string) (int64, error) {
 	return u, nil
 }
 
-func Uint64ToString(u uint64) string {
-	res := strconv.FormatUint(u, 10) //int64转字符串
+func Int64ToString(i int64) string {
+	res := strconv.FormatInt(i, 10) //int64转字符串
 	return res
 }

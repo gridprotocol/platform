@@ -57,7 +57,7 @@ type OrderInfo struct {
 	Dur      string `json:"duration"`
 	Expire   string `json:"expire"`
 	Settled  bool   `json:"settled"`
-	Cost     uint64 `json:"cost"` // credit cost
+	Cost     int64  `json:"cost"` // credit cost
 }
 
 // register all routes for server

@@ -165,13 +165,13 @@ func (hc *HandlerCore) getUserTransfers(userAddr string) ([]TransferInfo, error)
 	logger.Debug("user's transfer id:", transID)
 
 	// number of transfers
-	num, err := utils.StringToUint64(transID)
+	num, err := utils.StringToInt64(transID)
 	if err != nil {
 		return nil, err
 	}
-	for i := uint64(0); i < num; i++ {
+	for i := int64(0); i < num; i++ {
 		// make key: trans_user_id
-		key := TransferInfoKey(userAddr, utils.Uint64ToString(i))
+		key := TransferInfoKey(userAddr, utils.Int64ToString(i))
 		logger.Debug("transfer key:", key)
 		// get transfer
 		data, err := hc.LocalDB.Get([]byte(key))
@@ -261,13 +261,13 @@ func (hc *HandlerCore) getPayInfoList(addr string) ([]PayInfo, error) {
 	logger.Debug("account's pay id:", payID)
 
 	// number of order
-	num, err := utils.StringToUint64(payID)
+	num, err := utils.StringToInt64(payID)
 	if err != nil {
 		return nil, err
 	}
-	for i := uint64(0); i < num; i++ {
+	for i := int64(0); i < num; i++ {
 		// make payInfo key
-		piKey := PayInfoKey(addr, utils.Uint64ToString(i))
+		piKey := PayInfoKey(addr, utils.Int64ToString(i))
 		logger.Debugf("order key:%s", piKey)
 		// get payinfo
 		data, err := hc.LocalDB.Get([]byte(piKey))
@@ -349,13 +349,13 @@ func (hc *HandlerCore) getUserOrders(userAddr string) ([]OrderInfo, error) {
 	logger.Debug("user's order id:", orderID)
 
 	// number of order equal to order id
-	num, err := utils.StringToUint64(orderID)
+	num, err := utils.StringToInt64(orderID)
 	if err != nil {
 		return nil, err
 	}
-	for i := uint64(0); i < num; i++ {
+	for i := int64(0); i < num; i++ {
 		// make key
-		key := OrderKey(userAddr, utils.Uint64ToString(i))
+		key := OrderKey(userAddr, utils.Int64ToString(i))
 		logger.Debug("order key:", key)
 		// get order
 		data, err := hc.LocalDB.Get([]byte(key))
@@ -395,7 +395,7 @@ func (hc *HandlerCore) appendResult(cps *[]CPInfo, item *badger.Item) error {
 }
 
 // add an account with some credit, return k,v for db write
-func (hc *HandlerCore) addCredit(addr string, credit uint64) (k []byte, v []byte, err error) {
+func (hc *HandlerCore) addCredit(addr string, credit int64) (k []byte, v []byte, err error) {
 
 	// credit key
 	creKey := CreditKey(addr)
@@ -417,12 +417,12 @@ func (hc *HandlerCore) addCredit(addr string, credit uint64) (k []byte, v []byte
 	logger.Debug("old credit:", old)
 
 	// accumulate credit
-	old64, err := utils.StringToUint64(old)
+	old64, err := utils.StringToInt64(old)
 	if err != nil {
 		return nil, nil, err
 	}
 	new64 := old64 + credit
-	new := utils.Uint64ToString(new64)
+	new := utils.Int64ToString(new64)
 
 	logger.Debug("new credit:", new)
 

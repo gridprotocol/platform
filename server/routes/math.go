@@ -7,59 +7,59 @@ import (
 )
 
 // calc credit cost of an order
-func CalcCost(o *OrderInfo) (uint64, error) {
-	nCPU, err := utils.StringToUint64(o.NumCPU)
+func CalcCost(o *OrderInfo) (int64, error) {
+	nCPU, err := utils.StringToInt64(o.NumCPU)
 	if err != nil {
 		return 0, err
 	}
-	pCPU, err := utils.StringToUint64(o.PriCPU)
-	if err != nil {
-		return 0, err
-	}
-
-	nGPU, err := utils.StringToUint64(o.NumGPU)
-	if err != nil {
-		return 0, err
-	}
-	pGPU, err := utils.StringToUint64(o.PriGPU)
+	pCPU, err := utils.StringToInt64(o.PriCPU)
 	if err != nil {
 		return 0, err
 	}
 
-	// T
-	nMem, err := utils.StringToUint64(o.NumMem)
+	nGPU, err := utils.StringToInt64(o.NumGPU)
 	if err != nil {
 		return 0, err
 	}
-	// T to byte
-	nMem = nMem * 1024 * 1024 * 1024 * 1024
-	pMem, err := utils.StringToUint64(o.PriMem)
-	if err != nil {
-		return 0, err
-	}
-
-	// G
-	nStor, err := utils.StringToUint64(o.NumStore)
-	if err != nil {
-		return 0, err
-	}
-	// G to byte
-	nStor = nStor * 1024 * 1024 * 1024
-	pStor, err := utils.StringToUint64(o.PriStore)
+	pGPU, err := utils.StringToInt64(o.PriGPU)
 	if err != nil {
 		return 0, err
 	}
 
-	dur, err := utils.StringToUint64(o.Dur)
+	// unit: G
+	nMem, err := utils.StringToInt64(o.NumMem)
 	if err != nil {
 		return 0, err
 	}
 
-	// get wei value
-	value := (nCPU*pCPU + nGPU*pGPU + nMem*pMem + nStor*pStor) * dur
-	logger.Debug("wei of order:", value)
+	pMem, err := utils.StringToInt64(o.PriMem)
+	if err != nil {
+		return 0, err
+	}
 
-	cost := value / 1000 / 1000 / 1000 / 1000
+	// unit: T
+	nStor, err := utils.StringToInt64(o.NumStore)
+	if err != nil {
+		return 0, err
+	}
+
+	pStor, err := utils.StringToInt64(o.PriStore)
+	if err != nil {
+		return 0, err
+	}
+
+	// dur: month
+	dur, err := utils.StringToInt64(o.Dur)
+	if err != nil {
+		return 0, err
+	}
+
+	// month to min
+	min := dur * 30 * 24 * 60
+
+	// calc cost
+	cost := (nCPU*pCPU + nGPU*pGPU + nMem*pMem + nStor*pStor) * min
+
 	logger.Debug("credit cost of order:", cost)
 
 	// return credit cost

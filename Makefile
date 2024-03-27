@@ -8,3 +8,5 @@ platform:
 
 clean:
 	        rm -rf platform
+
+all: clean platform

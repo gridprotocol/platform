@@ -1,0 +1,391 @@
+basePath: /
+definitions:
+  routes.CPInfo:
+    properties:
+      address:
+        type: string
+      endpoint:
+        type: string
+      name:
+        description: provider name
+        type: string
+      numCPU:
+        type: string
+      numGPU:
+        type: string
+      numMem:
+        type: string
+      numStore:
+        type: string
+      priCPU:
+        type: string
+      priGPU:
+        type: string
+      priMem:
+        type: string
+      priStore:
+        type: string
+    type: object
+host: localhost:8081
+info:
+  contact: {}
+  description: This is the grid platform
+  title: PLATFORM API
+  version: "1.0"
+paths:
+  /:
+    get:
+      consumes:
+      - application/json
+      description: welcome api
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: file id
+          schema:
+            type: string
+      summary: welcome
+      tags:
+      - Welcome
+  /createorder:
+    post:
+      consumes:
+      - multipart/form-data
+      description: create an order
+      parameters:
+      - description: user address
+        in: formData
+        name: userAddress
+        required: true
+        type: string
+      - description: cpAddress
+        in: formData
+        name: cpAddress
+        required: true
+        type: string
+      - description: num cpu
+        in: formData
+        name: numCPU
+        required: true
+        type: string
+      - description: price cpu
+        in: formData
+        name: priCPU
+        required: true
+        type: string
+      - description: num
+        in: formData
+        name: numGPU
+        required: true
+        type: string
+      - description: price
+        in: formData
+        name: priGPU
+        type: string
+      - description: num
+        in: formData
+        name: numStore
+        required: true
+        type: string
+      - description: price
+        in: formData
+        name: priStore
+        type: string
+      - description: num
+        in: formData
+        name: numMem
+        required: true
+        type: string
+      - description: price
+        in: formData
+        name: priMem
+        type: string
+      - description: duration
+        in: formData
+        name: duration
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: regist OK
+          schema:
+            type: string
+        "400":
+          description: bad request
+          schema:
+            type: string
+      summary: Create order
+      tags:
+      - CreateOrder
+  /listcp/:
+    get:
+      consumes:
+      - application/json
+      description: list all providers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/routes.CPInfo'
+            type: array
+        "404":
+          description: page not found
+          schema:
+            type: string
+      summary: List all providers
+      tags:
+      - Listcps
+  /listorder:
+    get:
+      consumes:
+      - application/json
+      description: list an order
+      parameters:
+      - description: user or provider
+        in: query
+        name: role
+        required: true
+        type: string
+      - description: address
+        in: query
+        name: address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: list OK
+          schema:
+            type: string
+        "400":
+          description: bad request
+          schema:
+            type: string
+      summary: List order
+      tags:
+      - ListOrder
+  /listtransfer:
+    get:
+      consumes:
+      - application/json
+      description: List all transfers of an address
+      parameters:
+      - description: address to show list
+        in: query
+        name: address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: list transfer OK
+          schema:
+            type: string
+        "400":
+          description: bad request
+          schema:
+            type: string
+      summary: List all transfers
+      tags:
+      - List transfers
+  /pay:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Pay to credit with a transfer's key
+      parameters:
+      - description: transfer key
+        in: formData
+        name: transkey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: pay OK
+          schema:
+            type: string
+        "400":
+          description: bad request
+          schema:
+            type: string
+      summary: Pay for credit
+      tags:
+      - Pay
+  /querycredit:
+    get:
+      consumes:
+      - application/json
+      description: Query credit of someone
+      parameters:
+      - description: role of this caller
+        in: query
+        name: role
+        required: true
+        type: string
+      - description: address of this caller
+        in: query
+        name: address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: query OK
+          schema:
+            type: string
+        "400":
+          description: bad request
+          schema:
+            type: string
+      summary: QueryCredit
+      tags:
+      - QueryCredit
+  /refreshtransfer:
+    post:
+      consumes:
+      - application/json
+      description: Refresh status of transfer of an address
+      parameters:
+      - description: address to refresh
+        in: query
+        name: address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: refresh OK
+          schema:
+            type: string
+        "400":
+          description: bad request
+          schema:
+            type: string
+      summary: RefreshTransfer status of transfer
+      tags:
+      - Refresh Transfer
+  /registcp:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Regist CP
+      parameters:
+      - description: name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: address
+        in: formData
+        name: address
+        required: true
+        type: string
+      - description: endpoint
+        in: formData
+        name: endpoint
+        required: true
+        type: string
+      - description: num cpu
+        in: formData
+        name: numCPU
+        required: true
+        type: string
+      - description: price cpu
+        in: formData
+        name: priCPU
+        required: true
+        type: string
+      - description: num
+        in: formData
+        name: numGPU
+        required: true
+        type: string
+      - description: price
+        in: formData
+        name: priGPU
+        type: string
+      - description: num
+        in: formData
+        name: numStore
+        required: true
+        type: string
+      - description: price
+        in: formData
+        name: priStore
+        type: string
+      - description: num
+        in: formData
+        name: numMem
+        required: true
+        type: string
+      - description: price
+        in: formData
+        name: priMem
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: regist OK
+          schema:
+            type: string
+        "400":
+          description: bad request
+          schema:
+            type: string
+      summary: Regist CP
+      tags:
+      - RegistCP
+  /transfer:
+    post:
+      consumes:
+      - application/json
+      description: user transfer token to platform
+      parameters:
+      - description: tx hash
+        in: query
+        name: txHash
+        required: true
+        type: string
+      - description: from addr
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: to addr
+        in: query
+        name: to
+        required: true
+        type: string
+      - description: transfer value
+        in: query
+        name: value
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: transfer OK
+          schema:
+            type: string
+        "400":
+          description: bad request
+          schema:
+            type: string
+      summary: Transfer token
+      tags:
+      - Transfer
+swagger: "2.0"

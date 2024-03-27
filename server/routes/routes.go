@@ -2,8 +2,12 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
+	_ "github.com/rockiecn/platform/docs"
 	"github.com/rockiecn/platform/lib/kv"
 	"github.com/rockiecn/platform/lib/logs"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 var logger = logs.Logger("routes")
@@ -65,6 +69,9 @@ func RegistRoutes(db *kv.Database) Routes {
 
 	ginEng := gin.Default()
 
+	// for swagger
+	ginEng.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	ginEng.Use(cors())
 
 	routes := Routes{
@@ -107,4 +114,5 @@ func (r Routes) registerAll(db *kv.Database) {
 	r.POST("/transfer", hc.TransferHandler)
 	r.GET("/listtransfer", hc.ListTransferHandler)
 	r.POST("/refreshtransfer", hc.RefreshTransferHandler)
+
 }

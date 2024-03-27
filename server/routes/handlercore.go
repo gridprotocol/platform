@@ -35,12 +35,40 @@ type TransferInfo struct {
 	CreditSaved bool   `json:"CreditSaved"`
 }
 
-// handler of welcom
+// ShowAccount godoc
+//
+//	@Summary		welcome
+//	@Description	welcome api
+//	@Tags			Welcome
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	string	"file id"
+//	@Router			/ [get]
 func (hc *HandlerCore) RootHandler(c *gin.Context) {
 	c.String(http.StatusOK, "Welcome Server")
 }
 
 // handler of cp login
+//
+//	@Summary		Regist CP
+//	@Description	Regist CP
+//	@Tags			RegistCP
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			name		formData	string	true	"name"
+//	@Param			address		formData	string	true	"address"
+//	@Param			endpoint	formData	string	true	"endpoint"
+//	@Param			numCPU		formData	string	true	"num cpu"
+//	@Param			priCPU		formData	string	true	"price cpu"
+//	@Param			numGPU		formData	string	true	"num"
+//	@Param			priGPU		formData	string	false	"price"
+//	@Param			numStore	formData	string	true	"num"
+//	@Param			priStore	formData	string	false	"price"
+//	@Param			numMem		formData	string	true	"num"
+//	@Param			priMem		formData	string	false	"price"
+//	@Success		200			{object}	string	"regist OK"
+//	@Failure		400			{object}	string	"bad request"
+//	@Router			/registcp [post]
 func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 
 	// provider name
@@ -64,19 +92,19 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 
 	// check input
 	if !isNumber(priCPU) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
+		c.JSON(http.StatusBadRequest, gin.H{"response": "cpu price must be number"})
 		return
 	}
 	if !isNumber(priGPU) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
+		c.JSON(http.StatusBadRequest, gin.H{"response": "gpu price must be number"})
 		return
 	}
 	if !isNumber(priMem) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
+		c.JSON(http.StatusBadRequest, gin.H{"response": "mem price must be number"})
 		return
 	}
 	if !isNumber(priStore) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
+		c.JSON(http.StatusBadRequest, gin.H{"response": "store price must be number"})
 		return
 	}
 	if !isNumber(numStore) {
@@ -134,8 +162,18 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 }
 
 // handler for list cp nodes
+// ListCPHandler godoc
+//
+//	@Summary		List all providers
+//	@Description	list all providers
+//	@Tags			Listcps
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	[]CPInfo
+//	@Failure		404	{object}	string	"page not found"
+//
+//	@Router			/listcp/ [get]
 func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
-
 	// all cp info to response
 	cps := make([]CPInfo, 0, 100)
 
@@ -162,6 +200,26 @@ func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 }
 
 // handler of create order
+//
+//	@Summary		Create order
+//	@Description	create an order
+//	@Tags			CreateOrder
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			userAddress	formData	string	true	"user address"
+//	@Param			cpAddress	formData	string	true	"cpAddress"
+//	@Param			numCPU		formData	string	true	"num cpu"
+//	@Param			priCPU		formData	string	true	"price cpu"
+//	@Param			numGPU		formData	string	true	"num"
+//	@Param			priGPU		formData	string	false	"price"
+//	@Param			numStore	formData	string	true	"num"
+//	@Param			priStore	formData	string	false	"price"
+//	@Param			numMem		formData	string	true	"num"
+//	@Param			priMem		formData	string	false	"price"
+//	@Param			duration	formData	string	true	"duration"
+//	@Success		200			{object}	string	"regist OK"
+//	@Failure		400			{object}	string	"bad request"
+//	@Router			/createorder [post]
 func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 
 	// user address
@@ -382,6 +440,18 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 }
 
 // handler for get order list for user or cp
+//
+//	@Summary		List order
+//	@Description	list an order
+//	@Tags			ListOrder
+//	@Accept			json
+//	@Produce		json
+//	@Param			role	query		string	true	"user or provider"
+//	@Param			address	query		string	true	"address"
+//
+//	@Success		200		{object}	string	"list OK"
+//	@Failure		400		{object}	string	"bad request"
+//	@Router			/listorder [get]
 func (hc *HandlerCore) ListOrderHandler(c *gin.Context) {
 
 	// get role
@@ -415,8 +485,18 @@ func (hc *HandlerCore) ListOrderHandler(c *gin.Context) {
 }
 
 // user record credit with txHash
-// value uint: eth
+// value - uint: eth
 // credit = eth * 1000000
+//
+//	@Summary		Pay for credit
+//	@Description	Pay to credit with a transfer's key
+//	@Tags			Pay
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			transkey	formData	string	true	"transfer key"
+//	@Success		200			{object}	string	"pay OK"
+//	@Failure		400			{object}	string	"bad request"
+//	@Router			/pay [post]
 func (hc *HandlerCore) PayHandler(c *gin.Context) {
 	// get key of a transfer
 	transkey := c.PostForm("transkey")
@@ -574,6 +654,17 @@ func (hc *HandlerCore) ListPayHandler(c *gin.Context) {
 }
 
 // qeury credit for a role with address
+//
+//	@Summary		QueryCredit
+//	@Description	Query credit of someone
+//	@Tags			QueryCredit
+//	@Accept			json
+//	@Produce		json
+//	@Param			role	query	string	true	"role of this caller"
+//	@Param			address	query	string	true	"address of this caller"
+//	@Success		200			{object}	string	"query OK"
+//	@Failure		400			{object}	string	"bad request"
+//	@Router			/querycredit [get]
 func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 	role := c.Query("role")
 	address := c.Query("address")
@@ -672,6 +763,19 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 // transfer, write transfer records into db
 // transfer info key: trans_user_id
 // id key: trans_*
+//
+//	@Summary		Transfer token
+//	@Description	user transfer token to platform
+//	@Tags			Transfer
+//	@Accept			json
+//	@Produce		json
+//	@Param			txHash	query		string	true	"tx hash"
+//	@Param			from	query		string	true	"from addr"
+//	@Param			to		query		string	true	"to addr"
+//	@Param			value	query		string	true	"transfer value"
+//	@Success		200		{object}	string	"transfer OK"
+//	@Failure		400		{object}	string	"bad request"
+//	@Router			/transfer [post]
 func (hc *HandlerCore) TransferHandler(c *gin.Context) {
 	txHash := c.Query("txHash")
 	from := c.Query("from")
@@ -732,6 +836,16 @@ func (hc *HandlerCore) TransferHandler(c *gin.Context) {
 }
 
 // list all transfer info about an user
+//
+//	@Summary		List all transfers
+//	@Description	List all transfers of an address
+//	@Tags			List transfers
+//	@Accept			json
+//	@Produce		json
+//	@Param			address	query		string	true	"address to show list"
+//	@Success		200		{object}	string	"list transfer OK"
+//	@Failure		400		{object}	string	"bad request"
+//	@Router			/listtransfer [get]
 func (hc *HandlerCore) ListTransferHandler(c *gin.Context) {
 
 	// user address from param
@@ -748,6 +862,16 @@ func (hc *HandlerCore) ListTransferHandler(c *gin.Context) {
 }
 
 // refresh all transfers of an user, check transfers' confirmed state
+//
+//	@Summary		RefreshTransfer status of transfer
+//	@Description	Refresh status of transfer of an address
+//	@Tags			Refresh Transfer
+//	@Accept			json
+//	@Produce		json
+//	@Param			address	query		string	true	"address to refresh"
+//	@Success		200		{object}	string	"refresh OK"
+//	@Failure		400		{object}	string	"bad request"
+//	@Router			/refreshtransfer [post]
 func (hc *HandlerCore) RefreshTransferHandler(c *gin.Context) {
 	userAddr := c.Query("address")
 

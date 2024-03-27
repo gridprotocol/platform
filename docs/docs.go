@@ -220,6 +220,44 @@ const docTemplate = `{
                 }
             }
         },
+        "/listpay": {
+            "get": {
+                "description": "ListPay",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ListPay"
+                ],
+                "summary": "ListPay",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "address of an user",
+                        "name": "addr",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "list pay OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/listtransfer": {
             "get": {
                 "description": "List all transfers of an address",

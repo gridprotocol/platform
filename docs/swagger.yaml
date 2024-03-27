@@ -171,6 +171,31 @@ paths:
       summary: List order
       tags:
       - ListOrder
+  /listpay:
+    get:
+      consumes:
+      - application/json
+      description: ListPay
+      parameters:
+      - description: address of an user
+        in: query
+        name: addr
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: list pay OK
+          schema:
+            type: string
+        "400":
+          description: bad request
+          schema:
+            type: string
+      summary: ListPay
+      tags:
+      - ListPay
   /listtransfer:
     get:
       consumes:

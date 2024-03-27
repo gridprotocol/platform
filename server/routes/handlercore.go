@@ -640,6 +640,16 @@ func (hc *HandlerCore) PayHandler(c *gin.Context) {
 }
 
 // query pay infos
+//
+//	@Summary		ListPay
+//	@Description	ListPay
+//	@Tags			ListPay
+//	@Accept			json
+//	@Produce		json
+//	@Param			addr	query	string	true	"address of an user"
+//	@Success		200			{object}	string	"list pay OK"
+//	@Failure		400			{object}	string	"bad request"
+//	@Router			/listpay [get]
 func (hc *HandlerCore) ListPayHandler(c *gin.Context) {
 	addr := c.Query("addr")
 

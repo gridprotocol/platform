@@ -69,9 +69,7 @@ func RegistRoutes(db *kv.Database) Routes {
 
 	ginEng := gin.Default()
 
-	// for swagger
-	ginEng.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
+	// cors
 	ginEng.Use(cors())
 
 	routes := Routes{
@@ -91,6 +89,9 @@ func (r Routes) registerAll(db *kv.Database) {
 	hc := HandlerCore{
 		LocalDB: db,
 	}
+
+	// for swagger
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// for test
 	r.GET("/", hc.RootHandler)

@@ -6,7 +6,7 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "183.240.197.189:28081",
+    "host": "localhost:8081",
     "basePath": "/",
     "paths": {
         "/": {
@@ -130,6 +130,50 @@
                     },
                     "400": {
                         "description": "bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/getcp/": {
+            "get": {
+                "description": "get a provider's info",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get cp"
+                ],
+                "summary": "get a provider",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "address of a provider",
+                        "name": "address",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/routes.CPInfo"
+                        }
+                    },
+                    "404": {
+                        "description": "page not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
                         "schema": {
                             "type": "string"
                         }

@@ -143,6 +143,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/getcp/": {
+            "get": {
+                "description": "get a provider's info",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get cp"
+                ],
+                "summary": "get a provider",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "address of a provider",
+                        "name": "address",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/routes.CPInfo"
+                        }
+                    },
+                    "404": {
+                        "description": "page not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/listcp/": {
             "get": {
                 "description": "list all providers",
@@ -628,7 +672,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "183.240.197.189:28081",
+	Host:             "localhost:8081",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "PLATFORM API",

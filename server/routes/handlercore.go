@@ -199,6 +199,50 @@ func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, cps)
 }
 
+// handler for get a cp node
+// GetCPHandler godoc
+//
+//	@Summary		get a provider
+//	@Description	get a provider's info
+//	@Tags			get cp
+//	@Accept			json
+//	@Produce		json
+//	@Param			address	query		string	true	"address of a provider"
+//	@Success		200		{object}	CPInfo
+//	@Failure		404		{object}	string	"page not found"
+//	@Failure		500		{object}	string	"internal server error"
+//
+//	@Router			/getcp/ [get]
+func (hc *HandlerCore) GetCPHandler(c *gin.Context) {
+
+	// provider address from param
+	addr := c.Query("address")
+
+	cp := CPInfo{}
+
+	// get cpinfo key
+	cpkey := CPInfoKey(addr)
+
+	// read db for cp info
+	v, err := hc.LocalDB.Get(cpkey)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// unmarshal
+	err = json.Unmarshal(v, &cp)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	logger.Debug("cpinfo:", cp)
+
+	// response node list
+	c.JSON(http.StatusOK, cp)
+}
+
 // handler of create order
 //
 //	@Summary		Create order

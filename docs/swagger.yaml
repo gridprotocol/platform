@@ -26,7 +26,7 @@ definitions:
       priStore:
         type: string
     type: object
-host: 183.240.197.189:28081
+host: localhost:8081
 info:
   contact: {}
   description: This is the grid platform
@@ -120,6 +120,35 @@ paths:
       summary: Create order
       tags:
       - CreateOrder
+  /getcp/:
+    get:
+      consumes:
+      - application/json
+      description: get a provider's info
+      parameters:
+      - description: address of a provider
+        in: query
+        name: address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/routes.CPInfo'
+        "404":
+          description: page not found
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: get a provider
+      tags:
+      - get cp
   /listcp/:
     get:
       consumes:

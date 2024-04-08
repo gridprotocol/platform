@@ -67,9 +67,10 @@ type OrderInfo struct {
 // register all routes for server
 func RegistRoutes(db *kv.Database) Routes {
 
+	// new default gin engine
 	ginEng := gin.Default()
 
-	// cors
+	// use cors middleware
 	ginEng.Use(cors())
 
 	routes := Routes{
@@ -99,6 +100,7 @@ func (r Routes) registerAll(db *kv.Database) {
 	// cp operation
 	r.POST("/registcp", hc.RegistCPHandler)
 	r.GET("/listcp", hc.ListCPHandler)
+	r.GET("/getcp", hc.GetCPHandler)
 
 	// order operation
 	r.POST("/createorder", hc.CreateOrderHandler)

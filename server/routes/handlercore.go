@@ -6,7 +6,11 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v2"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
+	"github.com/grid/contracts/eth"
+	"github.com/grid/contracts/go/registry"
 	"github.com/rockiecn/platform/lib/kv"
 	"github.com/rockiecn/platform/lib/utils"
 )
@@ -33,6 +37,14 @@ type TransferInfo struct {
 	Value       string `json:"Value"`
 	TxConfirmed bool   `json:"TxConfirmed"`
 	CreditSaved bool   `json:"CreditSaved"`
+}
+
+var ctr = eth.Address{}
+
+// load all contract addresses from json
+func init() {
+	ctr = eth.LoadLocal()
+	logger.Info("contract addresses:", ctr)
 }
 
 // ShowAccount godoc
@@ -62,8 +74,8 @@ func (hc *HandlerCore) RootHandler(c *gin.Context) {
 //	@Param			priCPU		formData	string	true	"price cpu"
 //	@Param			numGPU		formData	string	true	"num"
 //	@Param			priGPU		formData	string	false	"price"
-//	@Param			numStore	formData	string	true	"num"
-//	@Param			priStore	formData	string	false	"price"
+//	@Param			numDisk	formData	string	true	"num"
+//	@Param			priDisk	formData	string	false	"price"
 //	@Param			numMem		formData	string	true	"num"
 //	@Param			priMem		formData	string	false	"price"
 //	@Success		200			{object}	string	"regist OK"
@@ -72,23 +84,29 @@ func (hc *HandlerCore) RootHandler(c *gin.Context) {
 func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 
 	// provider name
-	name := c.PostForm("name")
+	//name := c.PostForm("name")
+
 	// provider wallet address
-	address := c.PostForm("address")
+	cpAddr := c.PostForm("cp")
+	_ = cpAddr
 
-	endpoint := c.PostForm("endpoint")
+	// connection info of provider
+	ip := c.PostForm("ip")
+	domain := c.PostForm("domain")
+	port := c.PostForm("port")
 
-	numCPU := c.PostForm("numCPU")
-	priCPU := c.PostForm("priCPU")
+	// resource info
+	numCPU := c.PostForm("nCPU")
+	priCPU := c.PostForm("pCPU")
 
-	numGPU := c.PostForm("numGPU")
-	priGPU := c.PostForm("priGPU")
+	numGPU := c.PostForm("nGPU")
+	priGPU := c.PostForm("pGPU")
 
-	numStore := c.PostForm("numStore")
-	priStore := c.PostForm("priStore")
+	numDisk := c.PostForm("nDisk")
+	priDisk := c.PostForm("pDisk")
 
-	numMem := c.PostForm("numMem")
-	priMem := c.PostForm("priMem")
+	numMem := c.PostForm("nMem")
+	priMem := c.PostForm("pMem")
 
 	// check input
 	if !isNumber(priCPU) {
@@ -103,11 +121,11 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"response": "mem price must be number"})
 		return
 	}
-	if !isNumber(priStore) {
+	if !isNumber(priDisk) {
 		c.JSON(http.StatusBadRequest, gin.H{"response": "store price must be number"})
 		return
 	}
-	if !isNumber(numStore) {
+	if !isNumber(numDisk) {
 		c.JSON(http.StatusBadRequest, gin.H{"response": "store space must be number"})
 		return
 	}
@@ -115,50 +133,133 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"response": "memory space must be number"})
 		return
 	}
-
-	//
-	info := CPInfo{
-		Name:     name,
-		Address:  address,
-		EndPoint: endpoint,
-		NumCPU:   numCPU,
-		PriCPU:   priCPU,
-		NumGPU:   numGPU,
-		PriGPU:   priGPU,
-		NumStore: numStore,
-		PriStore: priStore,
-		NumMem:   numMem,
-		PriMem:   priMem,
+	if !isNumber(numCPU) {
+		c.JSON(http.StatusBadRequest, gin.H{"response": "cpu number must be number"})
+		return
+	}
+	if !isNumber(numGPU) {
+		c.JSON(http.StatusBadRequest, gin.H{"response": "gpu number must be number"})
+		return
 	}
 
-	// marshal into bytes
-	data, err := json.Marshal(info)
+	// cal set of registry contract to register a cp info
+
+	// connect to an eth node with ep
+	backend, chainID := eth.ConnETH(eth.Endpoint)
+	logger.Info("chain id:", chainID)
+
+	// get registry instance
+	regIns, err := registry.NewRegistry(common.HexToAddress(ctr.Registry), backend)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+		logger.Error("new registry instance failed:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	KEY := CPInfoKey(address)
-
-	// check if cp exists
-	b, err := hc.LocalDB.Has(KEY)
+	logger.Info("making auth")
+	// admin register for cp
+	// todo: cp need pay credit for tx fee
+	txAuth, err := eth.MakeAuth(chainID, eth.SK1)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+		logger.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if b {
-		c.JSON(http.StatusOK, gin.H{"response": "cp already exist"})
-		return
-	}
+	logger.Info("make auth ok")
 
-	// wallet address as key, info as valude
-	err = hc.LocalDB.Put(KEY, data)
+	// provider as register
+	//txAuth.From = common.HexToAddress(cpAddr)
+
+	// type transfer
+	cpu, err := utils.StringToUint64(numCPU)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	gpu, err := utils.StringToUint64(numGPU)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	mem, err := utils.StringToUint64(numMem)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	disk, err := utils.StringToUint64(numDisk)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	logger.Info("call registry.set")
+
+	// call registry's Set method with all params
+	tx, err := regIns.Set(txAuth, ip, domain, port, cpu, gpu, mem, disk)
+	if err != nil {
+		logger.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
+	// wait tx ok
+	logger.Info("waiting for set to be ok")
+	eth.CheckTx(eth.Endpoint, tx.Hash(), "")
+
+	// get cp's reg info
+	regInfo, err := regIns.Get(&bind.CallOpts{}, eth.Addr1)
+	if err != nil {
+		logger.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	logger.Info("regInfo:", regInfo)
+
+	// response to client
 	c.JSON(http.StatusOK, gin.H{"response": "regist OK"})
+
+	/*
+		//
+		info := CPInfo{
+			Name:     name,
+			Address:  address,
+			EndPoint: endpoint,
+			NumCPU:   numCPU,
+			PriCPU:   priCPU,
+			NumGPU:   numGPU,
+			PriGPU:   priGPU,
+			numDisk: numDisk,
+			priDisk: priDisk,
+			NumMem:   numMem,
+			PriMem:   priMem,
+		}
+
+		// marshal into bytes
+		data, err := json.Marshal(info)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			return
+		}
+
+		KEY := CPInfoKey(address)
+
+		// check if cp exists
+		b, err := hc.LocalDB.Has(KEY)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			return
+		}
+		if b {
+			c.JSON(http.StatusOK, gin.H{"response": "cp already exist"})
+			return
+		}
+
+		// wallet address as key, info as valude
+		err = hc.LocalDB.Put(KEY, data)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"response": "regist OK"})
+	*/
 }
 
 // handler for list cp nodes
@@ -256,8 +357,8 @@ func (hc *HandlerCore) GetCPHandler(c *gin.Context) {
 //	@Param			priCPU		formData	string	true	"price cpu"
 //	@Param			numGPU		formData	string	true	"num"
 //	@Param			priGPU		formData	string	false	"price"
-//	@Param			numStore	formData	string	true	"num"
-//	@Param			priStore	formData	string	false	"price"
+//	@Param			numDisk	formData	string	true	"num"
+//	@Param			priDisk	formData	string	false	"price"
 //	@Param			numMem		formData	string	true	"num"
 //	@Param			priMem		formData	string	false	"price"
 //	@Param			duration	formData	string	true	"duration"
@@ -278,8 +379,8 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	numGPU := c.PostForm("numGPU")
 	priGPU := c.PostForm("priGPU")
 
-	numStore := c.PostForm("numStore")
-	priStore := c.PostForm("priStore")
+	numDisk := c.PostForm("numDisk")
+	priDisk := c.PostForm("priDisk")
 
 	numMem := c.PostForm("numMem")
 	priMem := c.PostForm("priMem")
@@ -300,11 +401,11 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
 		return
 	}
-	if !isNumber(priStore) {
+	if !isNumber(priDisk) {
 		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
 		return
 	}
-	if !isNumber(numStore) {
+	if !isNumber(numDisk) {
 		c.JSON(http.StatusBadRequest, gin.H{"response": "store space must be number"})
 		return
 	}
@@ -376,13 +477,14 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 		PriCPU:   priCPU,
 		NumGPU:   numGPU,
 		PriGPU:   priGPU,
-		NumStore: numStore,
-		PriStore: priStore,
-		NumMem:   numMem,
-		PriMem:   priMem,
-		Dur:      dur,
-		Expire:   expire,
-		Settled:  false,
+		NumDisk:  numDisk,
+		PriDisk:  priDisk,
+
+		NumMem:  numMem,
+		PriMem:  priMem,
+		Dur:     dur,
+		Expire:  expire,
+		Settled: false,
 	}
 
 	logger.Debug("GPU price:", order.PriGPU)

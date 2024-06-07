@@ -36,7 +36,7 @@ var runCmd = &cli.Command{
 			Name:    "endpoint",
 			Aliases: []string{"e"},
 			Usage:   "input your endpoint",
-			Value:   "0.0.0.0:8081",
+			Value:   "0.0.0.0:8002",
 		},
 	},
 	Action: func(ctx *cli.Context) error {

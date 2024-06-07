@@ -1,17 +1,16 @@
 package server
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rockiecn/platform/lib/config"
 	"github.com/rockiecn/platform/lib/kv"
-	"github.com/rockiecn/platform/lib/logs"
+	"github.com/rockiecn/platform/lib/log"
 	"github.com/rockiecn/platform/server/routes"
 )
 
-var logger = logs.Logger("server")
+var logger = log.Logger("server")
 
 type ServerOption struct {
 	Endpoint string
@@ -25,12 +24,12 @@ type PFServer struct {
 // create new platform server with kv db
 func NewServer(opt ServerOption) *PFServer {
 
-	log.Println("Server Start")
+	logger.Info("Server Start")
 
 	// init config
 	err := config.InitConfig()
 	if err != nil {
-		log.Fatalf("failed to init the config: %v", err)
+		logger.Fatalf("failed to init the config: %v", err)
 	}
 
 	// make http server

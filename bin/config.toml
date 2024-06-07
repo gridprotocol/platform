@@ -1,5 +1,5 @@
 [Http]
-Listen = "localhost:12346"
+Listen = "localhost:????"
 
 [Local]
 DB_Path = "./db"

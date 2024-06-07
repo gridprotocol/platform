@@ -38,12 +38,12 @@ func CalcCost(o *OrderInfo) (int64, error) {
 	}
 
 	// unit: T
-	nStor, err := utils.StringToInt64(o.NumStore)
+	nStor, err := utils.StringToInt64(o.NumDisk)
 	if err != nil {
 		return 0, err
 	}
 
-	pStor, err := utils.StringToInt64(o.PriStore)
+	pStor, err := utils.StringToInt64(o.PriDisk)
 	if err != nil {
 		return 0, err
 	}

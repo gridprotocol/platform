@@ -4,13 +4,13 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/rockiecn/platform/docs"
 	"github.com/rockiecn/platform/lib/kv"
-	"github.com/rockiecn/platform/lib/logs"
+	"github.com/rockiecn/platform/lib/log"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-var logger = logs.Logger("routes")
+var logger = log.Logger("routes")
 
 type Routes struct {
 	*gin.Engine
@@ -54,8 +54,8 @@ type OrderInfo struct {
 	PriCPU   string `json:"priCPU"`
 	NumGPU   string `json:"numGPU"`
 	PriGPU   string `json:"priGPU"`
-	NumStore string `json:"numStore"`
-	PriStore string `json:"priStore"`
+	NumDisk  string `json:"numDisk"`
+	PriDisk  string `json:"priDisk"`
 	NumMem   string `json:"numMem"`
 	PriMem   string `json:"priMem"`
 	Dur      string `json:"duration"`

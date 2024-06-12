@@ -1,13 +1,18 @@
 package routes
 
 import (
+	"context"
 	"encoding/json"
+	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/dgraph-io/badger/v2"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
 	"github.com/grid/contracts/eth"
 	"github.com/grid/contracts/go/registry"
@@ -87,123 +92,54 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 	//name := c.PostForm("name")
 
 	// provider wallet address
-	cpAddr := c.PostForm("cp")
-	_ = cpAddr
+	// cpAddr := c.PostForm("cp")
+	// _ = cpAddr
 
-	// connection info of provider
-	ip := c.PostForm("ip")
-	domain := c.PostForm("domain")
-	port := c.PostForm("port")
+	// get signeTx from input
+	tx := c.PostForm("tx")
 
-	// resource info
-	numCPU := c.PostForm("nCPU")
-	priCPU := c.PostForm("pCPU")
+	//log.Println("tx: ", tx)
 
-	numGPU := c.PostForm("nGPU")
-	priGPU := c.PostForm("pGPU")
+	// transfer to types.Transaction
+	signedTx := new(types.Transaction)
+	signedTx.UnmarshalJSON([]byte(tx))
+	//log.Println("signed tx: ", signedTx)
 
-	numDisk := c.PostForm("nDisk")
-	priDisk := c.PostForm("pDisk")
-
-	numMem := c.PostForm("nMem")
-	priMem := c.PostForm("pMem")
-
-	// check input
-	if !isNumber(priCPU) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "cpu price must be number"})
-		return
-	}
-	if !isNumber(priGPU) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "gpu price must be number"})
-		return
-	}
-	if !isNumber(priMem) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "mem price must be number"})
-		return
-	}
-	if !isNumber(priDisk) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "store price must be number"})
-		return
-	}
-	if !isNumber(numDisk) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "store space must be number"})
-		return
-	}
-	if !isNumber(numMem) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "memory space must be number"})
-		return
-	}
-	if !isNumber(numCPU) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "cpu number must be number"})
-		return
-	}
-	if !isNumber(numGPU) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "gpu number must be number"})
-		return
-	}
-
-	// cal set of registry contract to register a cp info
-
-	// connect to an eth node with ep
-	backend, chainID := eth.ConnETH(eth.Endpoint)
-	logger.Info("chain id:", chainID)
-
-	// get registry instance
-	regIns, err := registry.NewRegistry(common.HexToAddress(ctr.Registry), backend)
+	// connect to an eth client
+	log.Println("connecting client")
+	client, err := ethclient.Dial(eth.Endpoint)
 	if err != nil {
-		logger.Error("new registry instance failed:", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		log.Fatal(err)
 	}
-
-	logger.Info("making auth")
-	// admin register for cp
-	// todo: cp need pay credit for tx fee
-	txAuth, err := eth.MakeAuth(chainID, eth.SK1)
-	if err != nil {
-		logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	logger.Info("make auth ok")
-
-	// provider as register
-	//txAuth.From = common.HexToAddress(cpAddr)
-
-	// type transfer
-	cpu, err := utils.StringToUint64(numCPU)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
-	gpu, err := utils.StringToUint64(numGPU)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
-	mem, err := utils.StringToUint64(numMem)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
-	disk, err := utils.StringToUint64(numDisk)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
-
-	logger.Info("call registry.set")
-
-	// call registry's Set method with all params
-	tx, err := regIns.Set(txAuth, ip, domain, port, cpu, gpu, mem, disk)
-	if err != nil {
-		logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+	// send tx to register a cp
+	log.Println("sending tx")
+	// send a tx to client
+	if err := client.SendTransaction(context.Background(), signedTx); err != nil {
+		log.Fatal(err)
 	}
 
 	// wait tx ok
 	logger.Info("waiting for set to be ok")
-	eth.CheckTx(eth.Endpoint, tx.Hash(), "")
+	eth.CheckTx(eth.Endpoint, signedTx.Hash(), "")
 
 	// get cp's reg info
-	regInfo, err := regIns.Get(&bind.CallOpts{}, eth.Addr1)
+
+	// contracts file lays with the platform bin
+	data, err := os.ReadFile("./contracts.json")
+	if err != nil {
+		log.Println("read contracts file error: ", err)
+		return
+	}
+	var a eth.Address
+	json.Unmarshal(data, &a)
+	// get registry instance
+	regIns, err := registry.NewRegistry(common.HexToAddress(a.Registry), client)
+	if err != nil {
+		log.Println("new registry instance failed: ", err)
+		return
+	}
+	// check cp's reg info
+	regInfo, err := regIns.Get(&bind.CallOpts{}, eth.Addr3)
 	if err != nil {
 		logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

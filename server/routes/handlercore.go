@@ -3,10 +3,9 @@ package routes
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"time"
 
 	"github.com/dgraph-io/badger/v2"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -15,7 +14,9 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
 	"github.com/grid/contracts/eth"
+	"github.com/grid/contracts/go/credit"
 	"github.com/grid/contracts/go/registry"
+	comm "github.com/rockiecn/platform/common"
 	"github.com/rockiecn/platform/lib/kv"
 	"github.com/rockiecn/platform/lib/utils"
 )
@@ -42,14 +43,6 @@ type TransferInfo struct {
 	Value       string `json:"Value"`
 	TxConfirmed bool   `json:"TxConfirmed"`
 	CreditSaved bool   `json:"CreditSaved"`
-}
-
-var ctr = eth.Address{}
-
-// load all contract addresses from json
-func init() {
-	ctr = eth.LoadLocal()
-	logger.Info("contract addresses:", ctr)
 }
 
 // ShowAccount godoc
@@ -92,8 +85,7 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 	//name := c.PostForm("name")
 
 	// provider wallet address
-	// cpAddr := c.PostForm("cp")
-	// _ = cpAddr
+	cpAddr := c.PostForm("address")
 
 	// get signeTx from input
 	tx := c.PostForm("tx")
@@ -103,7 +95,7 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 	// transfer to types.Transaction
 	signedTx := new(types.Transaction)
 	signedTx.UnmarshalJSON([]byte(tx))
-	//log.Println("signed tx: ", signedTx)
+	log.Println("signed tx: ", signedTx)
 
 	// connect to an eth client
 	log.Println("connecting client")
@@ -124,22 +116,14 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 
 	// get cp's reg info
 
-	// contracts file lays with the platform bin
-	data, err := os.ReadFile("./contracts.json")
-	if err != nil {
-		log.Println("read contracts file error: ", err)
-		return
-	}
-	var a eth.Address
-	json.Unmarshal(data, &a)
 	// get registry instance
-	regIns, err := registry.NewRegistry(common.HexToAddress(a.Registry), client)
+	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), client)
 	if err != nil {
 		log.Println("new registry instance failed: ", err)
 		return
 	}
 	// check cp's reg info
-	regInfo, err := regIns.Get(&bind.CallOpts{}, eth.Addr3)
+	regInfo, err := regIns.Get(&bind.CallOpts{}, common.HexToAddress(cpAddr))
 	if err != nil {
 		logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -151,51 +135,6 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 	// response to client
 	c.JSON(http.StatusOK, gin.H{"response": "regist OK"})
 
-	/*
-		//
-		info := CPInfo{
-			Name:     name,
-			Address:  address,
-			EndPoint: endpoint,
-			NumCPU:   numCPU,
-			PriCPU:   priCPU,
-			NumGPU:   numGPU,
-			PriGPU:   priGPU,
-			numDisk: numDisk,
-			priDisk: priDisk,
-			NumMem:   numMem,
-			PriMem:   priMem,
-		}
-
-		// marshal into bytes
-		data, err := json.Marshal(info)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-			return
-		}
-
-		KEY := CPInfoKey(address)
-
-		// check if cp exists
-		b, err := hc.LocalDB.Has(KEY)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-			return
-		}
-		if b {
-			c.JSON(http.StatusOK, gin.H{"response": "cp already exist"})
-			return
-		}
-
-		// wallet address as key, info as valude
-		err = hc.LocalDB.Put(KEY, data)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"response": "regist OK"})
-	*/
 }
 
 // handler for list cp nodes
@@ -253,31 +192,29 @@ func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 func (hc *HandlerCore) GetCPHandler(c *gin.Context) {
 
 	// provider address from param
-	addr := c.Query("address")
+	cpaddr := c.Query("address")
 
-	cp := CPInfo{}
+	// connect to an eth node with ep
+	logger.Info("connecting chain")
+	backend, chainID := eth.ConnETH(eth.Endpoint)
+	logger.Info("chain id:", chainID)
 
-	// get cpinfo key
-	cpkey := CPInfoKey(addr)
+	// get contract instance
+	contractIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
 
-	// read db for cp info
-	v, err := hc.LocalDB.Get(cpkey)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		c.JSON(http.StatusInternalServerError, fmt.Errorf("new token instance failed: %v", err))
 	}
 
-	// unmarshal
-	err = json.Unmarshal(v, &cp)
+	// get balance of addr2
+	regInfo, err := contractIns.Get(&bind.CallOpts{}, common.HexToAddress(cpaddr))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		c.JSON(http.StatusInternalServerError, err)
 	}
-
-	logger.Debug("cpinfo:", cp)
+	logger.Info("registry info:", regInfo)
 
 	// response node list
-	c.JSON(http.StatusOK, cp)
+	c.JSON(http.StatusOK, regInfo)
 }
 
 // handler of create order
@@ -758,98 +695,28 @@ func (hc *HandlerCore) ListPayHandler(c *gin.Context) {
 //	@Failure		400		{object}	string	"bad request"
 //	@Router			/querycredit [get]
 func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
-	role := c.Query("role")
-	address := c.Query("address")
+	userAddr := c.Query("address")
+	creditAddr := comm.Contracts.Credit
 
-	var credit string
+	// connect to an eth node with ep
+	backend, chainID := eth.ConnETH(eth.Endpoint)
+	fmt.Println("chain id:", chainID)
 
-	switch role {
-	case "user":
-		// get old credit from db, if key not found, init with 0
-		credit, err := hc.queryCredit(address)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-			return
-		}
-
-		logger.Debug("credit:", credit)
-
-		c.JSON(http.StatusOK, gin.H{
-			"credit": credit,
-		})
-
-	case "cp":
-		// settle all orders of this cp, set order state
-
-		// get cp's order list
-		orderList, err := hc.getCpOrders(address)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-			return
-		}
-
-		// deal with each order
-		for _, o := range orderList {
-			// for multiput
-			keys := [][]byte{}
-			values := [][]byte{}
-
-			// get current time stamp
-			now := time.Now().Unix()
-			logger.Debug("current timestamp:", now)
-			expire := o.Expire
-			expire64, err := utils.StringToInt64(expire)
-			if err != nil {
-				c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-				return
-			}
-			logger.Debug("expire timestamp:", expire64)
-
-			// todo: if order not expired, skip it
-			// if expire64 < now {
-			// 	continue
-			// }
-
-			// if not settled
-			if !o.Settled {
-				// add order's cost into cp's credit
-				k, v, err := hc.addCredit(o.CPAddr, o.Cost)
-				if err != nil {
-					c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-					return
-				}
-				keys = append(keys, k)
-				values = append(values, v)
-
-				// set order's settled state to true
-				k, v, err = hc.setOrderSettled([]byte(o.OrderKey), true)
-				if err != nil {
-					c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-					return
-				}
-				keys = append(keys, k)
-				values = append(values, v)
-
-				// multiput
-				hc.LocalDB.MultiPut(keys, values)
-			}
-		}
-
-		// get credit from db, if key not found, response 0
-		credit, err = hc.queryCredit(address)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-			return
-		}
-		logger.Debug("credit:", credit)
-
-		// response credit
-		c.JSON(http.StatusOK, gin.H{
-			"credit": credit,
-		})
-	default:
-		c.JSON(http.StatusOK, gin.H{"response": "error role in request"})
+	// get credit instance
+	creditIns, err := credit.NewCredit(common.HexToAddress(creditAddr), backend)
+	if err != nil {
+		fmt.Println("new credit instance failed:", err)
 	}
+
+	// query balance
+	bal, err := creditIns.BalanceOf(&bind.CallOpts{}, common.HexToAddress(userAddr))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"credit balance": bal})
+
 }
 
 // transfer, write transfer records into db

@@ -107,7 +107,7 @@ func (r Routes) registerAll(db *kv.Database) {
 
 	// order operation
 	r.POST("/createorder", hc.CreateOrderHandler)
-	// list orders for user
+	r.GET("/getorder", hc.GetOrderHandler)
 	r.GET("/listorder", hc.ListOrderHandler)
 
 }

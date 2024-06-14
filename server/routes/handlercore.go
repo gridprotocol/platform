@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/big"
 	"net/http"
 
-	"github.com/dgraph-io/badger/v2"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -15,6 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/grid/contracts/eth"
 	"github.com/grid/contracts/go/credit"
+	"github.com/grid/contracts/go/market"
 	"github.com/grid/contracts/go/registry"
 	comm "github.com/rockiecn/platform/common"
 	"github.com/rockiecn/platform/lib/kv"
@@ -80,10 +81,6 @@ func (hc *HandlerCore) RootHandler(c *gin.Context) {
 //	@Failure		400			{object}	string	"bad request"
 //	@Router			/registcp [post]
 func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
-
-	// provider name
-	//name := c.PostForm("name")
-
 	// provider wallet address
 	cpAddr := c.PostForm("address")
 
@@ -101,13 +98,15 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 	log.Println("connecting client")
 	client, err := ethclient.Dial(eth.Endpoint)
 	if err != nil {
-		log.Fatal(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	// send tx to register a cp
 	log.Println("sending tx")
 	// send a tx to client
 	if err := client.SendTransaction(context.Background(), signedTx); err != nil {
-		log.Fatal(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
 	// wait tx ok
@@ -120,6 +119,7 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), client)
 	if err != nil {
 		log.Println("new registry instance failed: ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	// check cp's reg info
@@ -150,29 +150,27 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 //
 //	@Router			/listcp/ [get]
 func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
-	// all cp info to response
-	cps := make([]CPInfo, 0, 100)
 
-	// get all cp info with prefix
-	PREFIX := []byte("CP_INFO_") // 设置通配符前缀
-	err := hc.LocalDB.DB.View(func(txn *badger.Txn) error {
-		it := txn.NewIterator(badger.DefaultIteratorOptions)
-		defer it.Close()
-		for it.Seek(PREFIX); it.ValidForPrefix(PREFIX); it.Next() {
-			err := hc.appendResult(&cps, it.Item())
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
+	// connect to an eth node with ep
+	logger.Info("connecting chain")
+	backend, chainID := eth.ConnETH(eth.Endpoint)
+	logger.Info("chain id:", chainID)
+
+	// get contract instance
+	registryIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("new registry instance failed: %s", err.Error())})
 	}
 
-	// response node list
-	c.JSON(http.StatusOK, cps)
+	// get key list
+	keys, err := registryIns.GetKeys(&bind.CallOpts{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("get cp keys failed: %s", err.Error())})
+	}
+	//logger.Info("cp keys:", keys)
+
+	// response key list
+	c.JSON(http.StatusOK, keys)
 }
 
 // handler for get a cp node
@@ -239,223 +237,133 @@ func (hc *HandlerCore) GetCPHandler(c *gin.Context) {
 //	@Failure		400			{object}	string	"bad request"
 //	@Router			/createorder [post]
 func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
+	// tx data in form
+	txData := c.PostForm("tx")
 
-	// user address
-	userAddr := c.PostForm("userAddress")
+	// transfer to types.Transaction
+	signedTx := new(types.Transaction)
+	signedTx.UnmarshalJSON([]byte(txData))
+	log.Println("signed tx: ", signedTx)
 
-	// provider address
-	cpAddr := c.PostForm("cpAddress")
-
-	numCPU := c.PostForm("numCPU")
-	priCPU := c.PostForm("priCPU")
-
-	numGPU := c.PostForm("numGPU")
-	priGPU := c.PostForm("priGPU")
-
-	numDisk := c.PostForm("numDisk")
-	priDisk := c.PostForm("priDisk")
-
-	numMem := c.PostForm("numMem")
-	priMem := c.PostForm("priMem")
-
-	// duration in month
-	dur := c.PostForm("duration")
-
-	// check input
-	if !isNumber(priCPU) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
-		return
-	}
-	if !isNumber(priGPU) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
-		return
-	}
-	if !isNumber(priMem) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
-		return
-	}
-	if !isNumber(priDisk) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "price must be number"})
-		return
-	}
-	if !isNumber(numDisk) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "store space must be number"})
-		return
-	}
-	if !isNumber(numMem) {
-		c.JSON(http.StatusBadRequest, gin.H{"response": "memory space must be number"})
-		return
-	}
-
-	// compute expire with duration and current time
-	expire, err := utils.DurToTS(dur)
+	// connect to an eth client
+	log.Println("connecting client")
+	client, err := ethclient.Dial(eth.Endpoint)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// read cp name from db with cp address
+	// mint credit to user and user approving
 
-	// get cp info key
-	cpkey := CPInfoKey(cpAddr)
-	// check cp
-	b, err := hc.LocalDB.Has([]byte(cpkey))
+	// connect to an eth node with ep
+	backend, chainID := eth.ConnETH(eth.Endpoint)
+	fmt.Println("chain id:", chainID)
+
+	// auth for admin
+	authAdmin, err := eth.MakeAuth(chainID, eth.SK0)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if !b {
-		c.JSON(http.StatusOK, gin.H{"response": "cp not found"})
-		return
-	}
-	// read cp info
-	data, err := hc.LocalDB.Get([]byte(cpkey))
+
+	// credit instance
+	creditIns, err := credit.NewCredit(common.HexToAddress(comm.Contracts.Credit), backend)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	// unmarshal data to CPInfo
-	cp := CPInfo{}
-	err = json.Unmarshal(data, &cp)
+
+	// total value of test order
+	totalValue, ok := new(big.Int).SetString("2831300", 10)
+	if !ok {
+		log.Fatal("big set string failed")
+	}
+
+	// mint some credit for approve
+	fmt.Println("admin mint some credit to user for create order")
+	tx, err := creditIns.Mint(authAdmin, eth.Addr1, totalValue)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	// get cp name and endpoint
-	cpName := cp.Name
-	endPoint := cp.EndPoint
-
-	// get current order id for each user, used in new order
-	var orderID string
-	orderID, err = hc.getOrderID(userAddr)
+	fmt.Println("waiting for tx to be ok")
+	err = eth.CheckTx(eth.Endpoint, tx.Hash(), "")
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	logger.Debugf("old order id:%s", orderID)
+	// approve must be done by the user before create an order
+	/*
+		// auth for user
+		authUser, err := eth.MakeAuth(chainID, eth.SK1)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 
-	// order key
-	orderKey := OrderKey(userAddr, orderID)
-	logger.Debugf("order key:%s", orderKey)
+		fmt.Println("user approving credit to market.., approve value: ", totalValue)
+		tx, err = creditIns.Approve(authUser, common.HexToAddress(comm.Contracts.Market), totalValue)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		// wait for tx to be ok
+		fmt.Println("waiting tx")
+		err = eth.CheckTx(eth.Endpoint, tx.Hash(), "")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	*/
 
-	// construct new order info
-	order := OrderInfo{
-		OrderKey: string(orderKey),
-		UserAddr: userAddr,
-		CPAddr:   cpAddr,
-		CPName:   cpName,
-		EndPoint: endPoint,
-		NumCPU:   numCPU,
-		PriCPU:   priCPU,
-		NumGPU:   numGPU,
-		PriGPU:   priGPU,
-		NumDisk:  numDisk,
-		PriDisk:  priDisk,
+	// send createorder tx
 
-		NumMem:  numMem,
-		PriMem:  priMem,
-		Dur:     dur,
-		Expire:  expire,
-		Settled: false,
-	}
-
-	logger.Debug("GPU price:", order.PriGPU)
-
-	// calc credit cost of order
-	cost64, err := CalcCost(&order)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-	logger.Debug("credit cost:", cost64)
-
-	// set cost in order
-	order.Cost = cost64
-
-	// get credit
-	credit, err := hc.queryCredit(userAddr)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+	log.Println("sending tx")
+	// send a tx to client
+	if err := client.SendTransaction(context.Background(), signedTx); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	logger.Debug("credit left:", credit)
-
-	// check credit
-	credit64, err := utils.StringToInt64(credit)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-	if credit64 < cost64 {
-		c.JSON(
-			http.StatusOK,
-			gin.H{"response": "credit is not enough to pay this order,create order failed"},
-		)
-		return
-	}
-
-	// for atomic operations on db
-	keys := [][]byte{}
-	values := [][]byte{}
-
-	// update user's credit
-	credit64 = credit64 - cost64
-	newCredit := utils.Int64ToString(credit64)
-	logger.Debug("new credit after createorder:", newCredit)
-
-	// update user's credit in db
-	creKey := CreditKey(userAddr)
-	keys = append(keys, []byte(creKey))
-	values = append(values, []byte(newCredit))
-
-	// db operation
-
-	// mashal order into bytes
-	data, err = json.Marshal(order)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-	// put order info into db
-	keys = append(keys, orderKey)
-	values = append(values, data)
-
-	// increase order id by 1
-	orderID64, err := utils.StringToInt64(orderID)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-	orderID64 += 1
-	orderID = utils.Int64ToString(orderID64)
-	logger.Debugf("new order id:%s", orderID)
-	// update order id
-	idKey := OrderIDKey(userAddr)
-	keys = append(keys, idKey)
-	values = append(values, []byte(orderID))
-
-	// append the order key for cp into db
-	k, v, err := hc.appendOrder(cpAddr, string(orderKey))
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-	keys = append(keys, k)
-	values = append(values, v)
-
-	// for atomic
-	err = hc.LocalDB.MultiPut(keys, values)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
+	// wait tx ok
+	logger.Info("waiting for set to be ok")
+	eth.CheckTx(eth.Endpoint, signedTx.Hash(), "")
 
 	// response
 	c.JSON(http.StatusOK, gin.H{
-		"cost": cost64, // credit = eth*1000000
+		"msg": "create order ok",
 	})
+}
+
+// handler for getOrder
+func (hc *HandlerCore) GetOrderHandler(c *gin.Context) {
+
+	// user and cp
+	userAddr := c.Query("user")
+	cpaddr := c.Query("cp")
+
+	// connect to an eth node with ep
+	logger.Info("connecting chain")
+	backend, chainID := eth.ConnETH(eth.Endpoint)
+	logger.Info("chain id:", chainID)
+
+	// get contract instance
+	marketIns, err := market.NewMarket(common.HexToAddress(comm.Contracts.Market), backend)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, fmt.Errorf("new market instance failed: %v", err))
+	}
+
+	// get order with user and cp
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{From: common.HexToAddress(userAddr)}, common.HexToAddress(cpaddr))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	logger.Info("order info:", orderInfo)
+
+	// response node list
+	c.JSON(http.StatusOK, orderInfo)
 }
 
 // handler for get order list for user or cp

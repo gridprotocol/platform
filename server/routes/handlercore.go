@@ -2,10 +2,8 @@ package routes
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
-	"math/big"
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -19,7 +17,6 @@ import (
 	"github.com/grid/contracts/go/registry"
 	comm "github.com/rockiecn/platform/common"
 	"github.com/rockiecn/platform/lib/kv"
-	"github.com/rockiecn/platform/lib/utils"
 )
 
 type HandlerCore struct {
@@ -215,6 +212,73 @@ func (hc *HandlerCore) GetCPHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, regInfo)
 }
 
+// user approve the order fee to market before create order
+func (hc *HandlerCore) ApproveHandler(c *gin.Context) {
+	// tx in form
+	txData := c.PostForm("tx")
+	log.Println("tx: ", txData)
+
+	// transfer to types.Transaction
+	signedTx := new(types.Transaction)
+	signedTx.UnmarshalJSON([]byte(txData))
+	log.Println("signed tx: ", signedTx)
+
+	// connect to an eth client
+	log.Println("connecting client")
+	client, err := ethclient.Dial(eth.Endpoint)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// send approve tx
+
+	log.Println("sending tx")
+	// send a tx to client
+	if err := client.SendTransaction(context.Background(), signedTx); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// wait tx ok
+	logger.Info("waiting for set to be ok")
+	eth.CheckTx(eth.Endpoint, signedTx.Hash(), "")
+
+	// response
+	c.JSON(http.StatusOK, gin.H{
+		"msg": "user approve ok",
+	})
+}
+
+// check credit allowance
+func (hc *HandlerCore) AllowanceHandler(c *gin.Context) {
+	// param in form
+	owner := c.Query("owner")
+	spender := c.Query("spender")
+
+	// connect to an eth node with ep
+	logger.Info("connecting chain")
+	backend, chainID := eth.ConnETH(eth.Endpoint)
+	logger.Info("chain id:", chainID)
+
+	// get contract instance
+	creditIns, err := credit.NewCredit(common.HexToAddress(comm.Contracts.Credit), backend)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, fmt.Errorf("new credit instance failed: %v", err))
+	}
+
+	// get allowance
+	allow, err := creditIns.Allowance(&bind.CallOpts{}, common.HexToAddress(owner), common.HexToAddress(spender))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	logger.Infof("allowance:", allow)
+
+	// response
+	c.JSON(http.StatusOK, gin.H{"allowance": allow})
+}
+
 // handler of create order
 //
 //	@Summary		Create order
@@ -252,70 +316,6 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	// mint credit to user and user approving
-
-	// connect to an eth node with ep
-	backend, chainID := eth.ConnETH(eth.Endpoint)
-	fmt.Println("chain id:", chainID)
-
-	// auth for admin
-	authAdmin, err := eth.MakeAuth(chainID, eth.SK0)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	// credit instance
-	creditIns, err := credit.NewCredit(common.HexToAddress(comm.Contracts.Credit), backend)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	// total value of test order
-	totalValue, ok := new(big.Int).SetString("2831300", 10)
-	if !ok {
-		log.Fatal("big set string failed")
-	}
-
-	// mint some credit for approve
-	fmt.Println("admin mint some credit to user for create order")
-	tx, err := creditIns.Mint(authAdmin, eth.Addr1, totalValue)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	fmt.Println("waiting for tx to be ok")
-	err = eth.CheckTx(eth.Endpoint, tx.Hash(), "")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	// approve must be done by the user before create an order
-	/*
-		// auth for user
-		authUser, err := eth.MakeAuth(chainID, eth.SK1)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		fmt.Println("user approving credit to market.., approve value: ", totalValue)
-		tx, err = creditIns.Approve(authUser, common.HexToAddress(comm.Contracts.Market), totalValue)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		// wait for tx to be ok
-		fmt.Println("waiting tx")
-		err = eth.CheckTx(eth.Endpoint, tx.Hash(), "")
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-	*/
 
 	// send createorder tx
 
@@ -381,213 +381,26 @@ func (hc *HandlerCore) GetOrderHandler(c *gin.Context) {
 //	@Router			/listorder [get]
 func (hc *HandlerCore) ListOrderHandler(c *gin.Context) {
 
-	// get role
-	role := c.Query("role")
-	// user address from param
-	addr := c.Query("address")
+	// connect to an eth node with ep
+	logger.Info("connecting chain")
+	backend, chainID := eth.ConnETH(eth.Endpoint)
+	logger.Info("chain id:", chainID)
 
-	var orderList []OrderInfo
-	var err error
-
-	// order list for response
-	switch role {
-	case "user":
-		orderList, err = hc.getUserOrders(addr)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-			return
-		}
-	case "cp":
-		orderList, err = hc.getCpOrders(addr)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-			return
-		}
-	default:
-		c.JSON(http.StatusOK, gin.H{"response": "error type in request"})
-	}
-
-	// response order list
-	c.JSON(http.StatusOK, orderList)
-}
-
-// user record credit with txHash
-// value - uint: eth
-// credit = eth * 1000000
-//
-//	@Summary		Pay for credit
-//	@Description	Pay to credit with a transfer's key
-//	@Tags			Pay
-//	@Accept			multipart/form-data
-//	@Produce		json
-//	@Param			transkey	formData	string	true	"transfer key"
-//	@Success		200			{object}	string	"pay OK"
-//	@Failure		400			{object}	string	"bad request"
-//	@Router			/pay [post]
-func (hc *HandlerCore) PayHandler(c *gin.Context) {
-	// get key of a transfer
-	transkey := c.PostForm("transkey")
-	transfer := TransferInfo{}
-	// get transfer info
-	data, err := hc.LocalDB.Get([]byte(transkey))
+	// get contract instance
+	marketIns, err := market.NewMarket(common.HexToAddress(comm.Contracts.Market), backend)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("new market instance failed: %s", err.Error())})
 	}
 
-	// unmarshal transfer info
-	err = json.Unmarshal(data, &transfer)
+	// get key list
+	keys, err := marketIns.GetKeys(&bind.CallOpts{})
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("get order keys failed: %s", err.Error())})
 	}
+	//logger.Info("cp keys:", keys)
 
-	// read field
-	from := transfer.From
-	value := transfer.Value
-	txHash := transfer.TxHash
-	confirmed := transfer.TxConfirmed
-	saved := transfer.CreditSaved
-
-	// tx not confirmed
-	if !confirmed {
-		c.JSON(http.StatusOK, gin.H{"error": "tx of this transfer has not been confirmed on chain yet"})
-		return
-	}
-
-	// transfer already used
-	if saved {
-		c.JSON(http.StatusOK, gin.H{"error": "this transfer has been used for credit"})
-		return
-	}
-
-	value64, err := utils.StringToInt64(value)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-	// calc credit: eth * 10^6
-	credit := value64 * 1000000
-
-	// get credit
-	oldCredit, err := hc.queryCredit(from)
-	if err != nil {
-		if err.Error() == "Key not found" {
-			oldCredit = "0"
-		} else {
-			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-			return
-		}
-	}
-
-	logger.Debug("old credit:", oldCredit)
-
-	// accumulate credit
-	old64, err := utils.StringToInt64(oldCredit)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-	new64 := old64 + credit
-	new := utils.Int64ToString(new64)
-
-	logger.Debug("new credit:", new)
-
-	// for atomic
-	keys := [][]byte{}
-	values := [][]byte{}
-
-	// update credit for this account
-	creKey := CreditKey(from)
-	keys = append(keys, creKey)
-	values = append(values, []byte(new))
-
-	// get payinfo id for this account
-	oldID, err := hc.getPayInfoID(from)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-
-	logger.Debug("old credit id:", oldID)
-
-	// update payinfo id
-	oldID64, err := utils.StringToInt64(oldID)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-	newID := utils.Int64ToString(oldID64 + 1)
-	logger.Debug("new payinfo id:", newID)
-	// update payinfo id for this account
-	idKey := PayInfoIDKey(from)
-	keys = append(keys, idKey)
-	values = append(values, []byte(newID))
-
-	// make payinfo's key
-	piKey := PayInfoKey(from, oldID)
-	logger.Debugf("payinfo key:%s", piKey)
-
-	// record pay info into db
-	payInfo := PayInfo{
-		PIKey:  string(piKey),
-		TIKey:  transkey, // which transfer is used for this credit
-		Owner:  from,
-		Credit: credit,
-		TxHash: txHash,
-	}
-	// marshal pi to bytes
-	data, err = json.Marshal(payInfo)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-	// record payinfo data
-	keys = append(keys, piKey)
-	values = append(values, data)
-
-	// modify transferinfo's state(tx confirmed, credit saved)
-	transfer.TxConfirmed = true
-	transfer.CreditSaved = true
-
-	// marshal to bytes
-	data, err = json.Marshal(transfer)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-	keys = append(keys, []byte(transkey))
-	values = append(values, data)
-
-	// multiput
-	hc.LocalDB.MultiPut(keys, values)
-
-	// response
-	c.JSON(http.StatusOK, gin.H{"response": "pay ok"})
-}
-
-// query pay infos
-//
-//	@Summary		ListPay
-//	@Description	ListPay
-//	@Tags			ListPay
-//	@Accept			json
-//	@Produce		json
-//	@Param			addr	query		string	true	"address of an user"
-//	@Success		200		{object}	string	"list pay OK"
-//	@Failure		400		{object}	string	"bad request"
-//	@Router			/listpay [get]
-func (hc *HandlerCore) ListPayHandler(c *gin.Context) {
-	addr := c.Query("addr")
-
-	piList, err := hc.getPayInfoList(addr)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-
-	// response
-	c.JSON(http.StatusOK, piList)
+	// response key list
+	c.JSON(http.StatusOK, keys)
 }
 
 // qeury credit for a role with address
@@ -625,163 +438,6 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"credit balance": bal})
 
-}
-
-// transfer, write transfer records into db
-// transfer info key: trans_user_id
-// id key: trans_*
-//
-//	@Summary		Transfer token
-//	@Description	user transfer token to platform
-//	@Tags			Transfer
-//	@Accept			json
-//	@Produce		json
-//	@Param			txHash	query		string	true	"tx hash"
-//	@Param			from	query		string	true	"from addr"
-//	@Param			to		query		string	true	"to addr"
-//	@Param			value	query		string	true	"transfer value"
-//	@Success		200		{object}	string	"transfer OK"
-//	@Failure		400		{object}	string	"bad request"
-//	@Router			/transfer [post]
-func (hc *HandlerCore) TransferHandler(c *gin.Context) {
-	txHash := c.Query("txHash")
-	from := c.Query("from")
-	to := c.Query("to")
-	value := c.Query("value")
-
-	confirmed := false
-	creditSaved := false
-
-	// for atomic
-	keys := [][]byte{}
-	values := [][]byte{}
-
-	// for id update
-	id, err := hc.getTransferID(from)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-	id64, err := utils.StringToInt64(id)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-	id64++
-	newID := utils.Int64ToString(id64)
-	// transfer id key
-	idKey := TransferIDKey(from)
-	// update transfer id
-	keys = append(keys, []byte(idKey))
-	values = append(values, []byte(newID))
-
-	// key for transfer info
-	tiKey := TransferInfoKey(from, id)
-	// make ti
-	ti := TransferInfo{
-		TIKey:       string(tiKey),
-		TxHash:      txHash,
-		From:        from,
-		To:          to,
-		Value:       value,
-		TxConfirmed: confirmed,
-		CreditSaved: creditSaved,
-	}
-	data, err := json.Marshal(ti)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-	// record ti
-	keys = append(keys, tiKey)
-	values = append(values, data)
-
-	// multiput
-	hc.LocalDB.MultiPut(keys, values)
-
-	c.JSON(http.StatusOK, gin.H{"response": "transfer ok"})
-}
-
-// list all transfer info about an user
-//
-//	@Summary		List all transfers
-//	@Description	List all transfers of an address
-//	@Tags			List transfers
-//	@Accept			json
-//	@Produce		json
-//	@Param			address	query		string	true	"address to show list"
-//	@Success		200		{object}	string	"list transfer OK"
-//	@Failure		400		{object}	string	"bad request"
-//	@Router			/listtransfer [get]
-func (hc *HandlerCore) ListTransferHandler(c *gin.Context) {
-
-	// user address from param
-	addr := c.Query("address")
-
-	// transfer list for response
-	transList, err := hc.getUserTransfers(addr)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, transList)
-}
-
-// refresh all transfers of an user, check transfers' confirmed state
-//
-//	@Summary		RefreshTransfer status of transfer
-//	@Description	Refresh status of transfer of an address
-//	@Tags			Refresh Transfer
-//	@Accept			json
-//	@Produce		json
-//	@Param			address	query		string	true	"address to refresh"
-//	@Success		200		{object}	string	"refresh OK"
-//	@Failure		400		{object}	string	"bad request"
-//	@Router			/refreshtransfer [post]
-func (hc *HandlerCore) RefreshTransferHandler(c *gin.Context) {
-	userAddr := c.Query("address")
-
-	transfers, err := hc.getUserTransfers(userAddr)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-
-	// for atomic
-	keys := [][]byte{}
-	values := [][]byte{}
-
-	// check all transfers for confirm
-	for _, transfer := range transfers {
-		// if this transfer already confirmed, skip
-		if transfer.TxConfirmed {
-			continue
-		}
-
-		// check for now
-		confirmed, err := checkTxConfirmed(transfer.TxHash)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-			return
-		}
-
-		if confirmed {
-			k, v, err := hc.setTransferConfirmed([]byte(transfer.TIKey), true)
-			if err != nil {
-				c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-				return
-			}
-			// k,v
-			keys = append(keys, k)
-			values = append(values, v)
-		}
-	}
-
-	// multi put all k,v
-	hc.LocalDB.MultiPut(keys, values)
-
-	c.JSON(http.StatusOK, gin.H{"response": "refresh transfer ok"})
 }
 
 // for cross domain

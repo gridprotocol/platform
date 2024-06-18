@@ -11,7 +11,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-// admin topup some credit for an user
+// admin topup some credit for an user to create orders
 var TopupCmd = &cli.Command{
 	Name:  "topup",
 	Usage: "topup credit",
@@ -39,6 +39,9 @@ var TopupCmd = &cli.Command{
 		// connect to an eth node with ep
 		backend, chainID := eth.ConnETH(eth.Endpoint)
 		fmt.Println("chain id:", chainID)
+
+		fmt.Println("user addr:", userAddr)
+		fmt.Println("credit addr:", creditAddr)
 
 		// get credit instance
 		creditIns, err := credit.NewCredit(common.HexToAddress(creditAddr), backend)

@@ -55,8 +55,8 @@ var TopupCmd = &cli.Command{
 			return err
 		}
 
-		// admin mint credit for user
-		tx, err := creditIns.Mint(authAdmin, common.HexToAddress(userAddr), a)
+		// admin transfer credit to user
+		tx, err := creditIns.Transfer(authAdmin, common.HexToAddress(userAddr), a)
 		if err != nil {
 			return err
 		}

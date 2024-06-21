@@ -134,6 +134,76 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 
 }
 
+// string memory ip,
+// string memory domain,
+// string memory port,
+// uint64 cpu,
+// uint64 gpu,
+// uint64 mem,
+// uint64 disk,
+// uint64 pcpu,
+// uint64 pgpu,
+// uint64 pmem,
+// uint64 pdisk
+
+// revise cp info
+func (hc *HandlerCore) ReviseHandler(c *gin.Context) {
+	// provider wallet address
+	cpAddr := c.PostForm("address")
+
+	// get signeTx from input
+	tx := c.PostForm("tx")
+
+	//log.Println("tx: ", tx)
+
+	// transfer to types.Transaction
+	signedTx := new(types.Transaction)
+	signedTx.UnmarshalJSON([]byte(tx))
+	log.Println("signed tx: ", signedTx)
+
+	// connect to an eth client
+	log.Println("connecting client")
+	client, err := ethclient.Dial(eth.Endpoint)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	// send tx to register a cp
+	log.Println("sending tx")
+	// send a tx to client
+	if err := client.SendTransaction(context.Background(), signedTx); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// wait tx ok
+	logger.Info("waiting for set to be ok")
+	eth.CheckTx(eth.Endpoint, signedTx.Hash(), "")
+
+	// get cp's reg info
+
+	// get registry instance
+	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), client)
+	if err != nil {
+		log.Println("new registry instance failed: ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	// check cp's reg info
+	regInfo, err := regIns.Get(&bind.CallOpts{}, common.HexToAddress(cpAddr))
+	if err != nil {
+		logger.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	logger.Info("regInfo:", regInfo)
+
+	// response to client
+	c.JSON(http.StatusOK, gin.H{"response": "regist OK"})
+
+}
+
 // handler for list cp nodes
 // ListCPHandler godoc
 //

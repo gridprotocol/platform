@@ -99,6 +99,7 @@ func (r Routes) registerAll(db *kv.Database) {
 
 	// cp operation
 	r.POST("/registcp", hc.RegistCPHandler)
+	r.POST("/revisecp", hc.ReviseHandler)
 	r.GET("/listcp", hc.ListCPHandler)
 	r.GET("/getcp", hc.GetCPHandler)
 

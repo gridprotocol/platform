@@ -200,7 +200,7 @@ func (hc *HandlerCore) ReviseHandler(c *gin.Context) {
 	logger.Info("regInfo:", regInfo)
 
 	// response to client
-	c.JSON(http.StatusOK, gin.H{"response": "regist OK"})
+	c.JSON(http.StatusOK, gin.H{"response": "revise OK"})
 
 }
 
@@ -223,21 +223,22 @@ func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 	backend, chainID := eth.ConnETH(eth.Endpoint)
 	logger.Info("chain id:", chainID)
 
+	logger.Info("registry address: ", comm.Contracts.Registry)
 	// get contract instance
 	registryIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("new registry instance failed: %s", err.Error())})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("new registry instance failed: %s", err.Error()).Error()})
 	}
 
-	// get key list
-	keys, err := registryIns.GetKeys(&bind.CallOpts{})
+	// get cp list
+	list, err := registryIns.GetList(&bind.CallOpts{})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("get cp keys failed: %s", err.Error())})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("get cp keys failed: %s", err.Error()).Error()})
 	}
 	//logger.Info("cp keys:", keys)
 
 	// response key list
-	c.JSON(http.StatusOK, keys)
+	c.JSON(http.StatusOK, list)
 }
 
 // handler for get a cp node
@@ -449,29 +450,29 @@ func (hc *HandlerCore) GetOrderHandler(c *gin.Context) {
 //	@Success		200		{object}	string	"list OK"
 //	@Failure		400		{object}	string	"bad request"
 //	@Router			/listorder [get]
-func (hc *HandlerCore) ListOrderHandler(c *gin.Context) {
+// func (hc *HandlerCore) ListOrderHandler(c *gin.Context) {
 
-	// connect to an eth node with ep
-	logger.Info("connecting chain")
-	backend, chainID := eth.ConnETH(eth.Endpoint)
-	logger.Info("chain id:", chainID)
+// 	// connect to an eth node with ep
+// 	logger.Info("connecting chain")
+// 	backend, chainID := eth.ConnETH(eth.Endpoint)
+// 	logger.Info("chain id:", chainID)
 
-	// get contract instance
-	marketIns, err := market.NewMarket(common.HexToAddress(comm.Contracts.Market), backend)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("new market instance failed: %s", err.Error())})
-	}
+// 	// get contract instance
+// 	marketIns, err := market.NewMarket(common.HexToAddress(comm.Contracts.Market), backend)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("new market instance failed: %s", err.Error())})
+// 	}
 
-	// get key list
-	keys, err := marketIns.GetKeys(&bind.CallOpts{})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("get order keys failed: %s", err.Error())})
-	}
-	//logger.Info("cp keys:", keys)
+// 	// get key list
+// 	keys, err := marketIns.GetKeys(&bind.CallOpts{})
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("get order keys failed: %s", err.Error())})
+// 	}
+// 	//logger.Info("cp keys:", keys)
 
-	// response key list
-	c.JSON(http.StatusOK, keys)
-}
+// 	// response key list
+// 	c.JSON(http.StatusOK, keys)
+// }
 
 // qeury credit for a role with address
 //

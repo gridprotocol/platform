@@ -11,6 +11,6 @@ var Contracts = eth.Address{}
 
 // load all contract addresses from json
 func init() {
-	Contracts = eth.LoadJSON()
+	Contracts = eth.Load("../../grid-contracts/eth/contracts.json")
 	fmt.Println("contract addresses:", Contracts)
 }

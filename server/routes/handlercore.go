@@ -228,12 +228,14 @@ func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 	registryIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("new registry instance failed: %s", err.Error()).Error()})
+		return
 	}
 
 	// get cp list
 	list, err := registryIns.GetList(&bind.CallOpts{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("get cp keys failed: %s", err.Error()).Error()})
+		return
 	}
 	//logger.Info("cp keys:", keys)
 
@@ -270,12 +272,14 @@ func (hc *HandlerCore) GetCPHandler(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, fmt.Errorf("new token instance failed: %v", err))
+		return
 	}
 
 	// get balance of addr2
 	regInfo, err := contractIns.Get(&bind.CallOpts{}, common.HexToAddress(cpaddr))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
+		return
 	}
 	logger.Info("registry info:", regInfo)
 
@@ -337,12 +341,14 @@ func (hc *HandlerCore) AllowanceHandler(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, fmt.Errorf("new credit instance failed: %v", err))
+		return
 	}
 
 	// get allowance
 	allow, err := creditIns.Allowance(&bind.CallOpts{}, common.HexToAddress(owner), common.HexToAddress(spender))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	logger.Infof("allowance:", allow)
 
@@ -411,7 +417,7 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 func (hc *HandlerCore) GetOrderHandler(c *gin.Context) {
 
 	// user and cp
-	userAddr := c.Query("user")
+	//userAddr := c.Query("user")
 	cpaddr := c.Query("cp")
 
 	// connect to an eth node with ep
@@ -424,12 +430,14 @@ func (hc *HandlerCore) GetOrderHandler(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, fmt.Errorf("new market instance failed: %v", err))
+		return
 	}
 
 	// get order with user and cp
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{From: common.HexToAddress(userAddr)}, common.HexToAddress(cpaddr))
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{From: eth.Addr1}, common.HexToAddress(cpaddr))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	logger.Info("order info:", orderInfo)
 
@@ -497,7 +505,8 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 	// get credit instance
 	creditIns, err := credit.NewCredit(common.HexToAddress(creditAddr), backend)
 	if err != nil {
-		fmt.Println("new credit instance failed:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
 	// query balance

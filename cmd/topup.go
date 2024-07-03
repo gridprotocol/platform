@@ -55,6 +55,11 @@ var TopupCmd = &cli.Command{
 			return err
 		}
 
+		//
+		authAdmin.GasLimit = 500000
+		// 50 gwei
+		authAdmin.GasPrice = new(big.Int).SetUint64(50000000000)
+
 		// admin transfer credit to user
 		tx, err := creditIns.Transfer(authAdmin, common.HexToAddress(userAddr), a)
 		if err != nil {

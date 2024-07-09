@@ -417,8 +417,8 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 func (hc *HandlerCore) GetOrderHandler(c *gin.Context) {
 
 	// user and cp
-	//userAddr := c.Query("user")
-	cpaddr := c.Query("cp")
+	userAddr := c.Query("user")
+	cpAddr := c.Query("cp")
 
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
@@ -434,7 +434,7 @@ func (hc *HandlerCore) GetOrderHandler(c *gin.Context) {
 	}
 
 	// get order with user and cp
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{From: eth.Addr1}, common.HexToAddress(cpaddr))
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{From: eth.Addr1}, common.HexToAddress(userAddr), common.HexToAddress(cpAddr))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

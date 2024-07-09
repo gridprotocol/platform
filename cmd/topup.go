@@ -66,12 +66,14 @@ var TopupCmd = &cli.Command{
 			return err
 		}
 
-		fmt.Println("waiting for mint tx to be ok")
+		fmt.Println("waiting for transfer tx to be ok")
 		// wait tx to complete
 		err = eth.CheckTx(eth.Endpoint, tx.Hash(), "")
 		if err != nil {
 			return err
 		}
+
+		fmt.Println("transfer ok")
 
 		return nil
 	},

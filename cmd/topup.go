@@ -18,26 +18,44 @@ var TopupCmd = &cli.Command{
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "address",
-			Aliases: []string{"addr"},
+			Aliases: []string{"a"},
 			Usage:   "address to topup",
 		},
 		&cli.StringFlag{
-			Name:    "amount",
-			Aliases: []string{"a"},
-			Usage:   "amount to topup",
+			Name:    "value",
+			Aliases: []string{"v"},
+			Usage:   "value to topup",
+		},
+
+		&cli.StringFlag{
+			Name:    "chain",
+			Aliases: []string{"c"},
+			Usage:   "chain to interactivate",
+			Value:   "local",
 		},
 	},
 	Action: func(ctx *cli.Context) error {
-		userAddr := ctx.String("addr")
-		amount := ctx.String("amount")
-		a, ok := new(big.Int).SetString(amount, 10)
+		userAddr := ctx.String("a")
+		value := ctx.String("v")
+		chain := ctx.String("c")
+
+		// amount to topup
+		v, ok := new(big.Int).SetString(value, 10)
 		if !ok {
 			return fmt.Errorf("new big int failed")
 		}
 		creditAddr := comm.Contracts.Credit
 
 		// connect to an eth node with ep
-		backend, chainID := eth.ConnETH(eth.Endpoint)
+		var ep string
+		switch chain {
+		case "local":
+			ep = eth.Endpoint
+		case "sepo":
+			ep = eth.Endpoint2
+		}
+
+		backend, chainID := eth.ConnETH(ep)
 		fmt.Println("chain id:", chainID)
 
 		fmt.Println("user addr:", userAddr)
@@ -61,7 +79,7 @@ var TopupCmd = &cli.Command{
 		authAdmin.GasPrice = new(big.Int).SetUint64(50000000000)
 
 		// admin transfer credit to user
-		tx, err := creditIns.Transfer(authAdmin, common.HexToAddress(userAddr), a)
+		tx, err := creditIns.Transfer(authAdmin, common.HexToAddress(userAddr), v)
 		if err != nil {
 			return err
 		}

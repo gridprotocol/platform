@@ -1,0 +1,7 @@
+contract addresses: {0x8b746ade7Bf8350e9BA8a33c3B52eA8bFD14424A 0x713909E8E123dbA655A2c0333980e5bE86240f27 0xaB33F8678833CdB1Abdc7bACbC51B042c0679642  0x1eE68eDA419A2aC8D1D4fAaE6dd32CcF78fBfb3f  }
+{"level":"INFO","time":"2024-07-15T17:32:28+08:00","sub":"server","caller":"server/server.go:27","msg":"Server Start"}
+badger 2024/07/15 17:32:28 INFO: All 0 tables opened in 0s
+badger 2024/07/15 17:32:28 INFO: Replaying file id: 0 at offset: 0
+badger 2024/07/15 17:32:28 INFO: Replay took: 1.75µs
+chain id: 1337
+[GIN] 2024/07/15 - 17:32:33 | 200 |   22.249833ms |             ::1 | GET      "/querycredit?address=0x82379862a857C98aB391Fa7F66957AfDE97EF528"

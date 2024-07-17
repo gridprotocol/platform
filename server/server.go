@@ -13,12 +13,14 @@ import (
 var logger = log.Logger("server")
 
 type ServerOption struct {
-	Endpoint string
+	Endpoint       string
+	Chain_Endpoint string
 }
 
 type PFServer struct {
-	LocalDB    *kv.Database
-	HttpServer *http.Server
+	LocalDB        *kv.Database
+	HttpServer     *http.Server
+	Chain_Endpoint string
 }
 
 // create new platform server with kv db
@@ -40,8 +42,9 @@ func NewServer(opt ServerOption) *PFServer {
 
 	// make platform server
 	pfServer := PFServer{
-		HttpServer: httSvr,
-		LocalDB:    nil,
+		HttpServer:     httSvr,
+		LocalDB:        nil,
+		Chain_Endpoint: opt.Chain_Endpoint,
 	}
 
 	// init db
@@ -56,7 +59,7 @@ func (s *PFServer) RegisterRoutes() {
 	gin.SetMode(gin.ReleaseMode)
 
 	// register routes
-	routes := routes.RegistRoutes(s.LocalDB)
+	routes := routes.RegistRoutes(s.LocalDB, s.Chain_Endpoint)
 
 	s.HttpServer.Handler = routes
 }

@@ -10,7 +10,10 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-var logger = log.Logger("routes")
+var (
+	logger         = log.Logger("routes")
+	Chain_Endpoint string
+)
 
 type Routes struct {
 	*gin.Engine
@@ -65,7 +68,7 @@ type OrderInfo struct {
 }
 
 // register all routes for server
-func RegistRoutes(db *kv.Database) Routes {
+func RegistRoutes(db *kv.Database, chain_ep string) Routes {
 
 	// new default gin engine
 	ginEng := gin.Default()
@@ -76,6 +79,9 @@ func RegistRoutes(db *kv.Database) Routes {
 	routes := Routes{
 		ginEng,
 	}
+
+	// store the chain endpoint for later use in hanlers
+	Chain_Endpoint = chain_ep
 
 	// register all routes
 	routes.registerAll(db)

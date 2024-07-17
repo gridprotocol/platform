@@ -26,7 +26,6 @@ var TopupCmd = &cli.Command{
 			Aliases: []string{"v"},
 			Usage:   "value to topup",
 		},
-
 		&cli.StringFlag{
 			Name:    "chain",
 			Aliases: []string{"c"},

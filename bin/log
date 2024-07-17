@@ -1,7 +1,72 @@
-contract addresses: {0x8b746ade7Bf8350e9BA8a33c3B52eA8bFD14424A 0x713909E8E123dbA655A2c0333980e5bE86240f27 0xaB33F8678833CdB1Abdc7bACbC51B042c0679642  0x1eE68eDA419A2aC8D1D4fAaE6dd32CcF78fBfb3f  }
-{"level":"INFO","time":"2024-07-15T17:32:28+08:00","sub":"server","caller":"server/server.go:27","msg":"Server Start"}
-badger 2024/07/15 17:32:28 INFO: All 0 tables opened in 0s
-badger 2024/07/15 17:32:28 INFO: Replaying file id: 0 at offset: 0
-badger 2024/07/15 17:32:28 INFO: Replay took: 1.75µs
+contract addresses: {0xEF247d00b4881CAe0b75cC24F4d1172236F923Bf 0xa426415434eF7000Ba82b5d1FF55E8000C1fc706 0xcCa990b5d6374aD92c9B83dF1F21d399169927E9  0x3Db2bCdE05F353f1fd7177f694AEfF222ab1AC18  }
+chain endpoint: HTTP://127.0.0.1:7545
+{"level":"INFO","time":"2024-07-17T10:38:41+08:00","sub":"server","caller":"server/server.go:29","msg":"Server Start"}
+badger 2024/07/17 10:38:41 INFO: All 0 tables opened in 0s
+badger 2024/07/17 10:38:41 INFO: Replaying file id: 0 at offset: 0
+badger 2024/07/17 10:38:41 INFO: Replay took: 1.375µs
 chain id: 1337
-[GIN] 2024/07/15 - 17:32:33 | 200 |   22.249833ms |             ::1 | GET      "/querycredit?address=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+[GIN] 2024/07/17 - 10:38:46 | 200 |   42.169042ms |             ::1 | GET      "/querycredit?address=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+chain id: 1337
+[GIN] 2024/07/17 - 10:39:32 | 200 |   26.757167ms |             ::1 | GET      "/querycredit?address=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+chain id: 1337
+[GIN] 2024/07/17 - 10:40:53 | 200 |   19.663083ms |             ::1 | GET      "/querycredit?address=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+chain id: 1337
+[GIN] 2024/07/17 - 10:41:29 | 200 |   11.039667ms |             ::1 | GET      "/querycredit?address=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+2024/07/17 10:43:02 signed tx:  &{0x140001c2180 {13951564290245609776 261381433959 0x1026a4a40} {[] {} <nil>} {{} {} 0} {[] {} <nil>}}
+2024/07/17 10:43:02 connecting client
+2024/07/17 10:43:02 sending tx
+{"level":"INFO","time":"2024-07-17T10:43:02+08:00","sub":"routes","caller":"routes/handlercore.go:110","msg":"waiting for set to be ok"}
+{"level":"INFO","time":"2024-07-17T10:43:08+08:00","sub":"routes","caller":"routes/handlercore.go:130","msg":"regInfo:{0xEf95c72C836605203F7f66788E450Af2a4141957 cp1 123.123.123.0 test domain 123 {11 22 33 44} {10 20 10 1} {11 22 33 44}}"}
+[GIN] 2024/07/17 - 10:43:08 | 200 |  6.085951208s |             ::1 | POST     "/registcp"
+{"level":"INFO","time":"2024-07-17T10:43:19+08:00","sub":"routes","caller":"routes/handlercore.go:266","msg":"connecting chain"}
+{"level":"INFO","time":"2024-07-17T10:43:19+08:00","sub":"routes","caller":"routes/handlercore.go:268","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-07-17T10:43:19+08:00","sub":"routes","caller":"routes/handlercore.go:284","msg":"registry info:{0xEf95c72C836605203F7f66788E450Af2a4141957 cp1 123.123.123.0 test domain 123 {11 22 33 44} {10 20 10 1} {11 22 33 44}}"}
+[GIN] 2024/07/17 - 10:43:19 | 200 |    49.30175ms |             ::1 | GET      "/getcp?address=0xEf95c72C836605203F7f66788E450Af2a4141957"
+2024/07/17 10:43:43 tx:  {"type":"0x0","chainId":"0x539","nonce":"0x7c","to":"0xcca990b5d6374ad92c9b83df1f21d399169927e9","gas":"0x61a80","gasPrice":"0x4a817c800","maxPriorityFeePerGas":null,"maxFeePerGas":null,"value":"0x0","input":"0x095ea7b3000000000000000000000000ef247d00b4881cae0b75cc24f4d1172236f923bf000000000000000000000000000000000000000000000000000000000fa869e8","v":"0xa96","r":"0x66152d8f469b356329e8d3666caaf360c724fca7ac497280fefbe28c00dd9f15","s":"0x8bee24aaed634b70e215c05f8a4644fb3bc4cca64cecc59b1b1629223a67a27","hash":"0x92ebaa38ce3ad71ca4596e94fd47bae846a786c2de8bfbd098e49dd68ed7548a"}
+2024/07/17 10:43:43 signed tx:  &{0x1400050d7a0 {13951564333701389560 301813669001 0x1026a4a40} {[] {} <nil>} {{} {} 0} {[] {} <nil>}}
+2024/07/17 10:43:43 connecting client
+2024/07/17 10:43:43 sending tx
+{"level":"INFO","time":"2024-07-17T10:43:43+08:00","sub":"routes","caller":"routes/handlercore.go:319","msg":"waiting for set to be ok"}
+[GIN] 2024/07/17 - 10:43:49 | 200 |  6.051821625s |             ::1 | POST     "/approve"
+{"level":"INFO","time":"2024-07-17T10:43:51+08:00","sub":"routes","caller":"routes/handlercore.go:335","msg":"connecting chain"}
+{"level":"INFO","time":"2024-07-17T10:43:51+08:00","sub":"routes","caller":"routes/handlercore.go:337","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-07-17T10:43:51+08:00","sub":"routes","caller":"routes/handlercore.go:353","msg":"allowance:%!(EXTRA *big.Int=0)"}
+[GIN] 2024/07/17 - 10:43:51 | 200 |   13.168833ms |             ::1 | GET      "/allowance?owner=0x82379862a857C98aB391Fa7F66957AfDE97EF528&spender=0x72Ed522dC2b3454b39841dD02544f9aBE421d324"
+{"level":"INFO","time":"2024-07-17T10:43:52+08:00","sub":"routes","caller":"routes/handlercore.go:335","msg":"connecting chain"}
+{"level":"INFO","time":"2024-07-17T10:43:52+08:00","sub":"routes","caller":"routes/handlercore.go:337","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-07-17T10:43:52+08:00","sub":"routes","caller":"routes/handlercore.go:353","msg":"allowance:%!(EXTRA *big.Int=0)"}
+[GIN] 2024/07/17 - 10:43:52 | 200 |   13.779166ms |             ::1 | GET      "/allowance?owner=0x82379862a857C98aB391Fa7F66957AfDE97EF528&spender=0x72Ed522dC2b3454b39841dD02544f9aBE421d324"
+{"level":"INFO","time":"2024-07-17T10:44:05+08:00","sub":"routes","caller":"routes/handlercore.go:335","msg":"connecting chain"}
+{"level":"INFO","time":"2024-07-17T10:44:05+08:00","sub":"routes","caller":"routes/handlercore.go:337","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-07-17T10:44:05+08:00","sub":"routes","caller":"routes/handlercore.go:353","msg":"allowance:%!(EXTRA *big.Int=262695400)"}
+[GIN] 2024/07/17 - 10:44:05 | 200 |   26.971792ms |             ::1 | GET      "/allowance?owner=0x82379862a857C98aB391Fa7F66957AfDE97EF528&spender=0xEF247d00b4881CAe0b75cC24F4d1172236F923Bf"
+2024/07/17 10:44:26 signed tx:  &{0x140001c4c60 {13951564379938234992 344879476876 0x1026a4a40} {[] {} <nil>} {{} {} 0} {[] {} <nil>}}
+2024/07/17 10:44:26 connecting client
+2024/07/17 10:44:26 sending tx
+{"level":"INFO","time":"2024-07-17T10:44:26+08:00","sub":"routes","caller":"routes/handlercore.go:407","msg":"waiting for set to be ok"}
+[GIN] 2024/07/17 - 10:44:32 | 200 |  6.077376833s |             ::1 | POST     "/createorder"
+{"level":"INFO","time":"2024-07-17T10:44:37+08:00","sub":"routes","caller":"routes/handlercore.go:460","msg":"connecting chain"}
+{"level":"INFO","time":"2024-07-17T10:44:37+08:00","sub":"routes","caller":"routes/handlercore.go:462","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-07-17T10:44:37+08:00","sub":"routes","caller":"routes/handlercore.go:478","msg":"order info:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957 {100 1000 10 1} {1 2 3 4} 262695400 262695400 0 false false 0 0 5 123100 1}"}
+[GIN] 2024/07/17 - 10:44:37 | 200 |   33.027958ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
+2024/07/17 10:45:03 signed tx:  &{0x14006204000 {13951564419950335480 382163010293 0x1026a4a40} {[] {} <nil>} {{} {} 0} {[] {} <nil>}}
+2024/07/17 10:45:03 connecting client
+2024/07/17 10:45:03 sending tx
+{"level":"INFO","time":"2024-07-17T10:45:03+08:00","sub":"routes","caller":"routes/handlercore.go:443","msg":"waiting for set to be ok"}
+[GIN] 2024/07/17 - 10:45:09 | 200 |  6.059815292s |             ::1 | POST     "/userconfirm"
+{"level":"INFO","time":"2024-07-17T10:45:12+08:00","sub":"routes","caller":"routes/handlercore.go:460","msg":"connecting chain"}
+{"level":"INFO","time":"2024-07-17T10:45:12+08:00","sub":"routes","caller":"routes/handlercore.go:462","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-07-17T10:45:12+08:00","sub":"routes","caller":"routes/handlercore.go:478","msg":"order info:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957 {100 1000 10 1} {1 2 3 4} 262695400 262695400 0 true false 0 0 5 123100 1}"}
+[GIN] 2024/07/17 - 10:45:12 | 200 |   32.112958ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
+{"level":"INFO","time":"2024-07-17T10:49:26+08:00","sub":"routes","caller":"routes/handlercore.go:460","msg":"connecting chain"}
+{"level":"INFO","time":"2024-07-17T10:49:26+08:00","sub":"routes","caller":"routes/handlercore.go:462","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-07-17T10:49:26+08:00","sub":"routes","caller":"routes/handlercore.go:478","msg":"order info:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957 {100 1000 10 1} {1 2 3 4} 262695400 262695400 0 true false 0 0 5 123100 1}"}
+[GIN] 2024/07/17 - 10:49:26 | 200 |   39.707791ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
+{"level":"INFO","time":"2024-07-17T10:52:19+08:00","sub":"routes","caller":"routes/handlercore.go:460","msg":"connecting chain"}
+{"level":"INFO","time":"2024-07-17T10:52:19+08:00","sub":"routes","caller":"routes/handlercore.go:462","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-07-17T10:52:19+08:00","sub":"routes","caller":"routes/handlercore.go:478","msg":"order info:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957 {100 1000 10 1} {1 2 3 4} 262695400 262695400 0 true true 0 0 5 123100 1}"}
+[GIN] 2024/07/17 - 10:52:19 | 200 |    42.97125ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
+{"level":"INFO","time":"2024-07-17T10:52:57+08:00","sub":"routes","caller":"routes/handlercore.go:460","msg":"connecting chain"}
+{"level":"INFO","time":"2024-07-17T10:52:57+08:00","sub":"routes","caller":"routes/handlercore.go:462","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-07-17T10:52:57+08:00","sub":"routes","caller":"routes/handlercore.go:478","msg":"order info:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957 {100 1000 10 1} {1 2 3 4} 262695400 262695400 0 true true 1721184753 1721184753 5 123100 2}"}
+[GIN] 2024/07/17 - 10:52:57 | 200 |   38.561542ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"

@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/grid/contracts/eth"
 	"github.com/mitchellh/go-homedir"
 	"github.com/rockiecn/platform/server"
 	"github.com/urfave/cli/v2"
@@ -35,15 +36,32 @@ var runCmd = &cli.Command{
 		&cli.StringFlag{
 			Name:    "endpoint",
 			Aliases: []string{"e"},
-			Usage:   "input your endpoint",
+			Usage:   "input your platform endpoint, ip:port",
 			Value:   "0.0.0.0:8002",
+		},
+		&cli.StringFlag{
+			Name:    "chain",
+			Aliases: []string{"c"},
+			Usage:   "chain to interactivate, local: use local test chain, sepo: use sepo test chain",
+			Value:   "local",
 		},
 	},
 	Action: func(ctx *cli.Context) error {
 		endPoint := ctx.String("endpoint")
+		chain := ctx.String("chain")
+		var chain_ep string
+		switch chain {
+		case "local":
+			chain_ep = eth.Endpoint
+		case "sepo":
+			chain_ep = eth.Endpoint2
+		}
+
+		fmt.Println("chain endpoint:", chain_ep)
 
 		opts := server.ServerOption{
-			Endpoint: endPoint,
+			Endpoint:       endPoint,
+			Chain_Endpoint: chain_ep,
 		}
 
 		// create server

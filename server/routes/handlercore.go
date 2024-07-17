@@ -93,7 +93,7 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 
 	// connect to an eth client
 	log.Println("connecting client")
-	client, err := ethclient.Dial(eth.Endpoint)
+	client, err := ethclient.Dial(Chain_Endpoint)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -108,7 +108,7 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 
 	// wait tx ok
 	logger.Info("waiting for set to be ok")
-	eth.CheckTx(eth.Endpoint, signedTx.Hash(), "")
+	eth.CheckTx(Chain_Endpoint, signedTx.Hash(), "")
 
 	// get cp's reg info
 
@@ -163,7 +163,7 @@ func (hc *HandlerCore) ReviseHandler(c *gin.Context) {
 
 	// connect to an eth client
 	log.Println("connecting client")
-	client, err := ethclient.Dial(eth.Endpoint)
+	client, err := ethclient.Dial(Chain_Endpoint)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -178,7 +178,7 @@ func (hc *HandlerCore) ReviseHandler(c *gin.Context) {
 
 	// wait tx ok
 	logger.Info("waiting for set to be ok")
-	eth.CheckTx(eth.Endpoint, signedTx.Hash(), "")
+	eth.CheckTx(Chain_Endpoint, signedTx.Hash(), "")
 
 	// get cp's reg info
 
@@ -220,7 +220,7 @@ func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
-	backend, chainID := eth.ConnETH(eth.Endpoint)
+	backend, chainID := eth.ConnETH(Chain_Endpoint)
 	logger.Info("chain id:", chainID)
 
 	logger.Info("registry address: ", comm.Contracts.Registry)
@@ -264,7 +264,7 @@ func (hc *HandlerCore) GetCPHandler(c *gin.Context) {
 
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
-	backend, chainID := eth.ConnETH(eth.Endpoint)
+	backend, chainID := eth.ConnETH(Chain_Endpoint)
 	logger.Info("chain id:", chainID)
 
 	// get contract instance
@@ -300,7 +300,7 @@ func (hc *HandlerCore) ApproveHandler(c *gin.Context) {
 
 	// connect to an eth client
 	log.Println("connecting client")
-	client, err := ethclient.Dial(eth.Endpoint)
+	client, err := ethclient.Dial(Chain_Endpoint)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -317,7 +317,7 @@ func (hc *HandlerCore) ApproveHandler(c *gin.Context) {
 
 	// wait tx ok
 	logger.Info("waiting for set to be ok")
-	eth.CheckTx(eth.Endpoint, signedTx.Hash(), "")
+	eth.CheckTx(Chain_Endpoint, signedTx.Hash(), "")
 
 	// response
 	c.JSON(http.StatusOK, gin.H{
@@ -333,7 +333,7 @@ func (hc *HandlerCore) AllowanceHandler(c *gin.Context) {
 
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
-	backend, chainID := eth.ConnETH(eth.Endpoint)
+	backend, chainID := eth.ConnETH(Chain_Endpoint)
 	logger.Info("chain id:", chainID)
 
 	// get contract instance
@@ -388,7 +388,7 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 
 	// connect to an eth client
 	log.Println("connecting client")
-	client, err := ethclient.Dial(eth.Endpoint)
+	client, err := ethclient.Dial(Chain_Endpoint)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -405,7 +405,7 @@ func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 
 	// wait tx ok
 	logger.Info("waiting for set to be ok")
-	eth.CheckTx(eth.Endpoint, signedTx.Hash(), "")
+	eth.CheckTx(Chain_Endpoint, signedTx.Hash(), "")
 
 	// response
 	c.JSON(http.StatusOK, gin.H{
@@ -424,7 +424,7 @@ func (hc *HandlerCore) UserConfirmHandler(c *gin.Context) {
 
 	// connect to an eth client
 	log.Println("connecting client")
-	client, err := ethclient.Dial(eth.Endpoint)
+	client, err := ethclient.Dial(Chain_Endpoint)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -441,7 +441,7 @@ func (hc *HandlerCore) UserConfirmHandler(c *gin.Context) {
 
 	// wait tx ok
 	logger.Info("waiting for set to be ok")
-	eth.CheckTx(eth.Endpoint, signedTx.Hash(), "")
+	eth.CheckTx(Chain_Endpoint, signedTx.Hash(), "")
 
 	// response
 	c.JSON(http.StatusOK, gin.H{
@@ -458,7 +458,7 @@ func (hc *HandlerCore) GetOrderHandler(c *gin.Context) {
 
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
-	backend, chainID := eth.ConnETH(eth.Endpoint)
+	backend, chainID := eth.ConnETH(Chain_Endpoint)
 	logger.Info("chain id:", chainID)
 
 	// get contract instance
@@ -498,7 +498,7 @@ func (hc *HandlerCore) GetOrderHandler(c *gin.Context) {
 
 // 	// connect to an eth node with ep
 // 	logger.Info("connecting chain")
-// 	backend, chainID := eth.ConnETH(eth.Endpoint)
+// 	backend, chainID := eth.ConnETH(Chain_Endpoint)
 // 	logger.Info("chain id:", chainID)
 
 // 	// get contract instance
@@ -535,7 +535,7 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 	creditAddr := comm.Contracts.Credit
 
 	// connect to an eth node with ep
-	backend, chainID := eth.ConnETH(eth.Endpoint)
+	backend, chainID := eth.ConnETH(Chain_Endpoint)
 	fmt.Println("chain id:", chainID)
 
 	// get credit instance

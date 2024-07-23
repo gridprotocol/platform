@@ -16,6 +16,7 @@ import (
 	"github.com/grid/contracts/eth"
 	"github.com/mitchellh/go-homedir"
 	"github.com/rockiecn/platform/common"
+	"github.com/rockiecn/platform/lib/config"
 	"github.com/rockiecn/platform/server"
 	"github.com/urfave/cli/v2"
 )
@@ -35,12 +36,6 @@ var runCmd = &cli.Command{
 	Usage: "run server",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:    "endpoint",
-			Aliases: []string{"e"},
-			Usage:   "input your platform endpoint, ip:port",
-			Value:   "0.0.0.0:8002",
-		},
-		&cli.StringFlag{
 			Name:    "chain",
 			Aliases: []string{"c"},
 			Usage:   "chain to interactivate, local: use local test chain, sepo: use sepo test chain",
@@ -48,8 +43,15 @@ var runCmd = &cli.Command{
 		},
 	},
 	Action: func(ctx *cli.Context) error {
-		endPoint := ctx.String("endpoint")
 		chain := ctx.String("chain")
+
+		// parse config file
+		err := config.InitConfig()
+		if err != nil {
+			log.Fatalf("failed to init the config: %v", err)
+		}
+		ep := config.GetConfig().Http.Listen
+		fmt.Println("endpoint:", ep)
 
 		var chain_ep string
 
@@ -67,7 +69,7 @@ var runCmd = &cli.Command{
 		fmt.Println("contract addresses:", common.Contracts)
 
 		opts := server.ServerOption{
-			Endpoint:       endPoint,
+			Endpoint:       ep,
 			Chain_Endpoint: chain_ep,
 		}
 

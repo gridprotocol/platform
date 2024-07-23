@@ -1,16 +1,25 @@
 package common
 
 import (
-	"fmt"
-
-	"github.com/grid/contracts/eth"
+	"github.com/grid/contracts/eth/contracts"
 )
 
 // all contracts addresses
-var Contracts = eth.Address{}
+var (
+	Contracts      contracts.Contracts
+	LocalContracts contracts.Local
+	SepoContracts  contracts.Sepo
+)
 
 // load all contract addresses from json
 func init() {
-	Contracts = eth.Load("../../grid-contracts/eth/contracts.json")
-	fmt.Println("contract addresses:", Contracts)
+	// init for contracts
+	Contracts = contracts.Contracts{}
+	// init contracts on local chain
+	LocalContracts = contracts.Local{}
+	LocalContracts.Load()
+
+	// init contracts on sepo chain
+	SepoContracts = contracts.Sepo{}
+	SepoContracts.Load()
 }

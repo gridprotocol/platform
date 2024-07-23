@@ -15,6 +15,7 @@ import (
 
 	"github.com/grid/contracts/eth"
 	"github.com/mitchellh/go-homedir"
+	"github.com/rockiecn/platform/common"
 	"github.com/rockiecn/platform/server"
 	"github.com/urfave/cli/v2"
 )
@@ -49,15 +50,21 @@ var runCmd = &cli.Command{
 	Action: func(ctx *cli.Context) error {
 		endPoint := ctx.String("endpoint")
 		chain := ctx.String("chain")
+
 		var chain_ep string
+
+		// select contracts addresses for each chain
 		switch chain {
 		case "local":
 			chain_ep = eth.Endpoint
+			common.Contracts = common.LocalContracts.Contracts
+
 		case "sepo":
 			chain_ep = eth.Endpoint2
+			common.Contracts = common.SepoContracts.Contracts
 		}
-
-		fmt.Println("chain endpoint:", chain_ep)
+		fmt.Printf("chain selected:%s, chain endpoint:%s\n", chain, chain_ep)
+		fmt.Println("contract addresses:", common.Contracts)
 
 		opts := server.ServerOption{
 			Endpoint:       endPoint,

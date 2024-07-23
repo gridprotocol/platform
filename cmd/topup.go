@@ -43,17 +43,22 @@ var TopupCmd = &cli.Command{
 		if !ok {
 			return fmt.Errorf("new big int failed")
 		}
-		creditAddr := comm.Contracts.Credit
 
 		// connect to an eth node with ep
 		var ep string
 		switch chain {
 		case "local":
 			ep = eth.Endpoint
+			comm.Contracts = comm.LocalContracts.Contracts
 		case "sepo":
 			ep = eth.Endpoint2
+			comm.Contracts = comm.SepoContracts.Contracts
 		}
 
+		// get credit contract address
+		creditAddr := comm.Contracts.Credit
+
+		// connect to chain
 		backend, chainID := eth.ConnETH(ep)
 		fmt.Println("chain id:", chainID)
 

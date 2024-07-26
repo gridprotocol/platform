@@ -29,7 +29,7 @@ var TopupCmd = &cli.Command{
 		&cli.StringFlag{
 			Name:    "chain",
 			Aliases: []string{"c"},
-			Usage:   "chain to interactivate",
+			Usage:   "chain to interactivate: local, sepo",
 			Value:   "local",
 		},
 	},

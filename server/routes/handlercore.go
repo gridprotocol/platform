@@ -510,7 +510,7 @@ func (hc *HandlerCore) GetOrderHandler(c *gin.Context) {
 	}
 
 	// get order with user and cp
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{From: common.HexToAddress(userAddr)}, common.HexToAddress(userAddr), common.HexToAddress(cpAddr))
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(userAddr), common.HexToAddress(cpAddr))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

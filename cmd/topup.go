@@ -88,9 +88,9 @@ var TopupCmd = &cli.Command{
 			return err
 		}
 
-		fmt.Println("waiting for transfer tx to be ok")
+		fmt.Println("waiting for transfer tx to be ok: ", tx.Hash())
 		// wait tx to complete
-		err = eth.CheckTx(eth.Endpoint, tx.Hash(), "")
+		err = eth.CheckTx(ep, tx.Hash(), "")
 		if err != nil {
 			return err
 		}

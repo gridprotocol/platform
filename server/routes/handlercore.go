@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
 	"github.com/grid/contracts/eth"
+	"github.com/grid/contracts/go/access"
 	"github.com/grid/contracts/go/credit"
 	"github.com/grid/contracts/go/market"
 	"github.com/grid/contracts/go/registry"
@@ -490,10 +491,15 @@ func (hc *HandlerCore) GetOrderHandler(c *gin.Context) {
 	userAddr := c.Query("user")
 	cpAddr := c.Query("cp")
 
+	logger.Debug("user:", userAddr)
+	logger.Debug("cp:", cpAddr)
+
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
 	backend, chainID := eth.ConnETH(Chain_Endpoint)
 	logger.Info("chain id:", chainID)
+
+	logger.Debug("market:", comm.Contracts.Market)
 
 	// get contract instance
 	marketIns, err := market.NewMarket(common.HexToAddress(comm.Contracts.Market), backend)
@@ -504,7 +510,7 @@ func (hc *HandlerCore) GetOrderHandler(c *gin.Context) {
 	}
 
 	// get order with user and cp
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{From: eth.Addr1}, common.HexToAddress(userAddr), common.HexToAddress(cpAddr))
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{From: common.HexToAddress(userAddr)}, common.HexToAddress(userAddr), common.HexToAddress(cpAddr))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -592,21 +598,21 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 
 // get current version of contracts
 func (hc *HandlerCore) CurrentVerHandler(c *gin.Context) {
-	regAddr := comm.Contracts.Registry
+	accAddr := comm.Contracts.Access
 
 	// connect to an eth node with ep
 	backend, chainID := eth.ConnETH(Chain_Endpoint)
 	fmt.Println("chain id:", chainID)
 
 	// get registry instance
-	regIns, err := registry.NewRegistry(common.HexToAddress(regAddr), backend)
+	accIns, err := access.NewAccess(common.HexToAddress(accAddr), backend)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// query balance
-	ver, err := regIns.CurrentVer(&bind.CallOpts{})
+	//
+	ver, err := accIns.CurrentVer(&bind.CallOpts{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

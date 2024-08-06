@@ -103,12 +103,12 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 	log.Println("sending tx")
 	// send a tx to client
 	if err := client.SendTransaction(context.Background(), signedTx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"send error": err.Error()})
 		return
 	}
 
 	// wait tx ok
-	logger.Info("waiting for set to be ok")
+	logger.Info("waiting for tx to be ok")
 	eth.CheckTx(Chain_Endpoint, signedTx.Hash(), "")
 
 	// get cp's reg info
@@ -121,7 +121,7 @@ func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 		return
 	}
 	// check cp's reg info
-	regInfo, err := regIns.Get(&bind.CallOpts{}, common.HexToAddress(cpAddr))
+	regInfo, err := regIns.Get(&bind.CallOpts{From: common.HexToAddress(cpAddr)}, common.HexToAddress(cpAddr))
 	if err != nil {
 		logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -191,7 +191,7 @@ func (hc *HandlerCore) ReviseHandler(c *gin.Context) {
 		return
 	}
 	// check cp's reg info
-	regInfo, err := regIns.Get(&bind.CallOpts{}, common.HexToAddress(cpAddr))
+	regInfo, err := regIns.Get(&bind.CallOpts{From: common.HexToAddress(cpAddr)}, common.HexToAddress(cpAddr))
 	if err != nil {
 		logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -233,7 +233,7 @@ func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 	}
 
 	// get cp list
-	list, err := registryIns.GetList(&bind.CallOpts{})
+	list, err := registryIns.GetList(&bind.CallOpts{From: common.HexToAddress("")})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("get cp keys failed: %s", err.Error()).Error()})
 		return
@@ -268,6 +268,9 @@ func (hc *HandlerCore) GetCPHandler(c *gin.Context) {
 	backend, chainID := eth.ConnETH(Chain_Endpoint)
 	logger.Info("chain id:", chainID)
 
+	logger.Debug("cp addr:", cpaddr)
+	logger.Debug("registry addr:", comm.Contracts.Registry)
+
 	// get contract instance
 	contractIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
 
@@ -277,7 +280,7 @@ func (hc *HandlerCore) GetCPHandler(c *gin.Context) {
 	}
 
 	// get balance of addr2
-	regInfo, err := contractIns.Get(&bind.CallOpts{}, common.HexToAddress(cpaddr))
+	regInfo, err := contractIns.Get(&bind.CallOpts{From: common.HexToAddress(cpaddr)}, common.HexToAddress(cpaddr))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -346,7 +349,7 @@ func (hc *HandlerCore) AllowanceHandler(c *gin.Context) {
 	}
 
 	// get allowance
-	allow, err := creditIns.Allowance(&bind.CallOpts{}, common.HexToAddress(owner), common.HexToAddress(spender))
+	allow, err := creditIns.Allowance(&bind.CallOpts{From: common.HexToAddress(owner)}, common.HexToAddress(owner), common.HexToAddress(spender))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -586,7 +589,7 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 	}
 
 	// query balance
-	bal, err := creditIns.BalanceOf(&bind.CallOpts{}, common.HexToAddress(userAddr))
+	bal, err := creditIns.BalanceOf(&bind.CallOpts{From: common.HexToAddress(userAddr)}, common.HexToAddress(userAddr))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

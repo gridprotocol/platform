@@ -115,12 +115,14 @@ func (r Routes) registerAll(db *kv.Database) {
 	// approve credit
 	r.POST("/approve", hc.ApproveHandler)
 	// check allowance after approve
-	r.GET("allowance", hc.AllowanceHandler)
+	r.GET("/allowance", hc.AllowanceHandler)
 
 	// order operation
 	r.POST("/createorder", hc.CreateOrderHandler)
 	r.GET("/getorder", hc.GetOrderHandler)
 	//r.GET("/listorder", hc.ListOrderHandler)
+	// get provider list
+	r.GET("/getlist", hc.GetListHandler)
 
 	r.POST("/userconfirm", hc.UserConfirmHandler)
 	r.POST("/usercancel", hc.UserCancelHandler)

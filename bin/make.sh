@@ -1,3 +1,3 @@
 #!/bin/bash
-rm ./bin/platform
+rm ../bin/platform
 make platform

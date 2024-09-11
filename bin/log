@@ -1,44 +1,22 @@
 endpoint: 0.0.0.0:8002
 chain selected:local, chain endpoint:HTTP://127.0.0.1:7545
-contract addresses: {v0.1.12  0x0Fc46FE536826C1F110c8810e4b3F7445266822c 0x837B4f7b036Ad1c638f328d992C50b2D696a5c86 0x7C41B0EaEE8B92314EaC7edD114eF9Bb5028a682  0xA1583aFD6F57268bf11CdD62C1093d411E825f64  }
-{"level":"INFO","time":"2024-09-02T16:17:55+08:00","sub":"server","caller":"server/server.go:29","msg":"Server Start"}
-badger 2024/09/02 16:17:55 INFO: All 0 tables opened in 0s
-badger 2024/09/02 16:17:55 INFO: Replaying file id: 0 at offset: 0
-badger 2024/09/02 16:17:55 INFO: Replay took: 1.541µs
-chain id: 1337
-[GIN] 2024/09/02 - 16:18:00 | 200 |   36.501709ms |             ::1 | GET      "/version"
-{"level":"INFO","time":"2024-09-02T16:18:21+08:00","sub":"routes","caller":"routes/handlercore.go:267","msg":"connecting chain"}
-{"level":"INFO","time":"2024-09-02T16:18:21+08:00","sub":"routes","caller":"routes/handlercore.go:269","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-09-02T16:18:21+08:00","sub":"routes","caller":"routes/handlercore.go:288","msg":"registry info:{0xEf95c72C836605203F7f66788E450Af2a4141957 cp1 123.123.123.0 testdomain 123 {11 22 33 44} {10 20 10 1} {11 22 33 44}}"}
-[GIN] 2024/09/02 - 16:18:21 | 200 |   45.738375ms |             ::1 | GET      "/getcp?address=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-09-02T16:18:30+08:00","sub":"routes","caller":"routes/handlercore.go:501","msg":"connecting chain"}
-{"level":"INFO","time":"2024-09-02T16:18:30+08:00","sub":"routes","caller":"routes/handlercore.go:503","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-09-02T16:18:30+08:00","sub":"routes","caller":"routes/handlercore.go:521","msg":"order info:{0x0000000000000000000000000000000000000000 0x0000000000000000000000000000000000000000  {0 0 0 0} {0 0 0 0} 0 0 0 0 0 0 0 0}"}
-[GIN] 2024/09/02 - 16:18:30 | 200 |     47.9345ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-09-02T16:18:47+08:00","sub":"routes","caller":"routes/handlercore.go:501","msg":"connecting chain"}
-{"level":"INFO","time":"2024-09-02T16:18:47+08:00","sub":"routes","caller":"routes/handlercore.go:503","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-09-02T16:18:47+08:00","sub":"routes","caller":"routes/handlercore.go:521","msg":"order info:{0x0000000000000000000000000000000000000000 0x0000000000000000000000000000000000000000  {0 0 0 0} {0 0 0 0} 0 0 0 0 0 0 0 0}"}
-[GIN] 2024/09/02 - 16:18:47 | 200 |   63.421875ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-09-02T16:18:48+08:00","sub":"routes","caller":"routes/handlercore.go:501","msg":"connecting chain"}
-{"level":"INFO","time":"2024-09-02T16:18:48+08:00","sub":"routes","caller":"routes/handlercore.go:503","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-09-02T16:18:48+08:00","sub":"routes","caller":"routes/handlercore.go:521","msg":"order info:{0x0000000000000000000000000000000000000000 0x0000000000000000000000000000000000000000  {0 0 0 0} {0 0 0 0} 0 0 0 0 0 0 0 0}"}
-[GIN] 2024/09/02 - 16:18:48 | 200 |     29.0095ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-09-02T16:18:49+08:00","sub":"routes","caller":"routes/handlercore.go:501","msg":"connecting chain"}
-{"level":"INFO","time":"2024-09-02T16:18:49+08:00","sub":"routes","caller":"routes/handlercore.go:503","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-09-02T16:18:49+08:00","sub":"routes","caller":"routes/handlercore.go:521","msg":"order info:{0x0000000000000000000000000000000000000000 0x0000000000000000000000000000000000000000  {0 0 0 0} {0 0 0 0} 0 0 0 0 0 0 0 0}"}
-[GIN] 2024/09/02 - 16:18:49 | 200 |   32.785917ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-09-02T16:19:30+08:00","sub":"routes","caller":"routes/handlercore.go:501","msg":"connecting chain"}
-{"level":"INFO","time":"2024-09-02T16:19:30+08:00","sub":"routes","caller":"routes/handlercore.go:503","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-09-02T16:19:30+08:00","sub":"routes","caller":"routes/handlercore.go:521","msg":"order info:{0x0000000000000000000000000000000000000000 0x0000000000000000000000000000000000000000  {0 0 0 0} {0 0 0 0} 0 0 0 0 0 0 0 0}"}
-[GIN] 2024/09/02 - 16:19:30 | 200 |   32.106833ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-09-02T16:19:32+08:00","sub":"routes","caller":"routes/handlercore.go:501","msg":"connecting chain"}
-{"level":"INFO","time":"2024-09-02T16:19:32+08:00","sub":"routes","caller":"routes/handlercore.go:503","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-09-02T16:19:32+08:00","sub":"routes","caller":"routes/handlercore.go:521","msg":"order info:{0x0000000000000000000000000000000000000000 0x0000000000000000000000000000000000000000  {0 0 0 0} {0 0 0 0} 0 0 0 0 0 0 0 0}"}
-[GIN] 2024/09/02 - 16:19:32 | 200 |   30.623708ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-09-02T16:19:51+08:00","sub":"routes","caller":"routes/handlercore.go:501","msg":"connecting chain"}
-{"level":"INFO","time":"2024-09-02T16:19:51+08:00","sub":"routes","caller":"routes/handlercore.go:503","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-09-02T16:19:51+08:00","sub":"routes","caller":"routes/handlercore.go:521","msg":"order info:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957  {1 1 1 1} {1 1 1 1} 40 40 0 1725265187 1725265187 5 10 2}"}
-[GIN] 2024/09/02 - 16:19:51 | 200 |    54.80725ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-09-02T16:20:38+08:00","sub":"routes","caller":"routes/handlercore.go:569","msg":"connecting chain"}
-{"level":"INFO","time":"2024-09-02T16:20:38+08:00","sub":"routes","caller":"routes/handlercore.go:571","msg":"chain id:1337"}
-[GIN] 2024/09/02 - 16:20:38 | 200 |  100.776042ms |             ::1 | GET      "/getlist?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+contract addresses: {v0.1.13  0x87d79BF73811C72ec37B3f6a8Bd10eac57b88E7f 0x52802407a4116AB5d6C6Ea8cdb0EE41ED4374B57 0x5AAe72a7Ae086c76B504f43Ca04B8ae16767A784  0xB7dDB90385Ad58FA66749186aB1279b3eE8e5751  }
+{"level":"INFO","time":"2024-09-11T16:18:37+08:00","sub":"server","caller":"server/server.go:29","msg":"Server Start"}
+badger 2024/09/11 16:18:37 INFO: All 0 tables opened in 0s
+badger 2024/09/11 16:18:37 INFO: Replaying file id: 0 at offset: 0
+badger 2024/09/11 16:18:37 INFO: Replay took: 1.667µs
+{"level":"INFO","time":"2024-09-11T16:18:44+08:00","sub":"routes","caller":"routes/handlercore.go:501","msg":"connecting chain"}
+{"level":"INFO","time":"2024-09-11T16:18:44+08:00","sub":"routes","caller":"routes/handlercore.go:503","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-09-11T16:18:44+08:00","sub":"routes","caller":"routes/handlercore.go:521","msg":"order info:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957 nginx-0x82379862a857c98ab391fa7f66957afde97ef528 {1 1 1 1} {1 1 1 1} 12000 11020 980 1726042068 1726042318 5 3000 2}"}
+[GIN] 2024/09/11 - 16:18:44 | 200 |     116.715ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
+{"level":"INFO","time":"2024-09-11T16:19:24+08:00","sub":"routes","caller":"routes/handlercore.go:501","msg":"connecting chain"}
+{"level":"INFO","time":"2024-09-11T16:19:24+08:00","sub":"routes","caller":"routes/handlercore.go:503","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-09-11T16:19:24+08:00","sub":"routes","caller":"routes/handlercore.go:521","msg":"order info:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957 nginx-0x82379862a857c98ab391fa7f66957afde97ef528 {1 1 1 1} {1 1 1 1} 12000 9268 2732 1726042068 1726042756 5 3000 2}"}
+[GIN] 2024/09/11 - 16:19:24 | 200 |   35.823625ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
+{"level":"INFO","time":"2024-09-11T16:19:50+08:00","sub":"routes","caller":"routes/handlercore.go:501","msg":"connecting chain"}
+{"level":"INFO","time":"2024-09-11T16:19:50+08:00","sub":"routes","caller":"routes/handlercore.go:503","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-09-11T16:19:50+08:00","sub":"routes","caller":"routes/handlercore.go:521","msg":"order info:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957 nginx-0x82379862a857c98ab391fa7f66957afde97ef528 {1 1 1 1} {1 1 1 1} 12000 9268 2732 1726042068 1726042756 5 3000 2}"}
+[GIN] 2024/09/11 - 16:19:50 | 200 |       40.23ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
+{"level":"INFO","time":"2024-09-11T16:19:57+08:00","sub":"routes","caller":"routes/handlercore.go:569","msg":"connecting chain"}
+{"level":"INFO","time":"2024-09-11T16:19:57+08:00","sub":"routes","caller":"routes/handlercore.go:571","msg":"chain id:1337"}
+[GIN] 2024/09/11 - 16:19:57 | 200 |   20.989167ms |             ::1 | GET      "/getlist?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"

@@ -587,6 +587,31 @@ func (hc *HandlerCore) GetListHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, keys)
 }
 
+// get orders for an user
+func (hc *HandlerCore) GetOrdersHandler(c *gin.Context) {
+	userAddr := c.Query("user")
+
+	// connect to an eth node with ep
+	logger.Info("connecting chain")
+	backend, chainID := eth.ConnETH(Chain_Endpoint)
+	logger.Info("chain id:", chainID)
+
+	// get contract instance
+	marketIns, err := market.NewMarket(common.HexToAddress(comm.Contracts.Market), backend)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("new market instance failed: %s", err.Error())})
+	}
+
+	// get orders of an user
+	orders, err := marketIns.GetOrders(&bind.CallOpts{}, common.HexToAddress(userAddr))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("get orders failed: %s", err.Error())})
+	}
+
+	// response order list
+	c.JSON(http.StatusOK, orders)
+}
+
 // qeury credit for a role with address
 //
 //	@Summary		QueryCredit

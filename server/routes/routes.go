@@ -123,6 +123,8 @@ func (r Routes) registerAll(db *kv.Database) {
 	//r.GET("/listorder", hc.ListOrderHandler)
 	// get provider list
 	r.GET("/getlist", hc.GetListHandler)
+	// get orders for an user
+	r.GET("/getorders", hc.GetOrdersHandler)
 
 	r.POST("/userconfirm", hc.UserConfirmHandler)
 	r.POST("/usercancel", hc.UserCancelHandler)

@@ -121,8 +121,16 @@ func (r Routes) registerAll(db *kv.Database) {
 	r.POST("/createorder", hc.CreateOrderHandler)
 	r.GET("/getorder", hc.GetOrderHandler)
 	//r.GET("/listorder", hc.ListOrderHandler)
+	// calc the total value of an order
+	r.GET("/valueorder", hc.ValueOrderHandler)
+
 	// get provider list
 	r.GET("/getlist", hc.GetListHandler)
+
+	// get a node info
+	r.GET("/node", hc.GetNodeHandler)
+	// list all nodes of a cp
+	r.GET("/nodes", hc.GetNodesHandler)
 	// get orders for an user
 	r.GET("/getorders", hc.GetOrdersHandler)
 

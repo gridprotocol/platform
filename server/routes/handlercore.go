@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/big"
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -524,6 +525,43 @@ func (hc *HandlerCore) GetOrderHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, orderInfo)
 }
 
+// value of an order
+func (hc *HandlerCore) ValueOrderHandler(c *gin.Context) {
+
+	// user and cp
+	userAddr := c.Query("user")
+	cpAddr := c.Query("cp")
+
+	logger.Debug("user:", userAddr)
+	logger.Debug("cp:", cpAddr)
+
+	// connect to an eth node with ep
+	logger.Info("connecting chain")
+	backend, chainID := eth.ConnETH(Chain_Endpoint)
+	logger.Info("chain id:", chainID)
+
+	logger.Debug("market:", comm.Contracts.Market)
+
+	// get contract instance
+	marketIns, err := market.NewMarket(common.HexToAddress(comm.Contracts.Market), backend)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, fmt.Errorf("new market instance failed: %v", err))
+		return
+	}
+
+	// get value
+	value, err := marketIns.ValueOrder(&bind.CallOpts{}, common.HexToAddress(userAddr), common.HexToAddress(cpAddr))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	logger.Info("order value:", value)
+
+	// response node list
+	c.JSON(http.StatusOK, value)
+}
+
 // handler for get order list for user or cp
 //
 //	@Summary		List order
@@ -573,18 +611,82 @@ func (hc *HandlerCore) GetListHandler(c *gin.Context) {
 	// get contract instance
 	marketIns, err := market.NewMarket(common.HexToAddress(comm.Contracts.Market), backend)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("new market instance failed: %s", err.Error())})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("new market instance failed: %s", err.Error())})
 	}
 
 	// get key list
 	keys, err := marketIns.GetProList(&bind.CallOpts{}, common.HexToAddress(userAddr))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("get order keys failed: %s", err.Error())})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("get order keys failed: %s", err.Error())})
+		return
 	}
 	//logger.Info("cp keys:", keys)
 
 	// response key list
 	c.JSON(http.StatusOK, keys)
+}
+
+// get a node info
+func (hc *HandlerCore) GetNodeHandler(c *gin.Context) {
+	cp := c.Query("cp")
+	id := c.Query("id")
+
+	// connect to an eth node with ep
+	logger.Info("connecting chain")
+	backend, chainID := eth.ConnETH(Chain_Endpoint)
+	logger.Info("chain id:", chainID)
+
+	logger.Info("get registry instance")
+	// get contract instance
+	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("new market instance failed: %s", err.Error())})
+		return
+	}
+
+	logger.Info("call list node")
+
+	// string to big
+	idBig, _ := new(big.Int).SetString(id, 10)
+
+	// get node info
+	node, err := regIns.GetNode(&bind.CallOpts{}, common.HexToAddress(cp), idBig)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("get node failed: %s", err.Error())})
+		return
+	}
+
+	// response
+	c.JSON(http.StatusOK, node)
+}
+
+// list node for a proivder
+func (hc *HandlerCore) GetNodesHandler(c *gin.Context) {
+	// connect to an eth node with ep
+	logger.Info("connecting chain")
+	backend, chainID := eth.ConnETH(Chain_Endpoint)
+	logger.Info("chain id:", chainID)
+
+	logger.Info("get registry instance")
+	// get contract instance
+	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("new market instance failed: %s", err.Error())})
+		return
+	}
+
+	logger.Info("call list node")
+
+	// get node list
+	nodes, err := regIns.ListNode(&bind.CallOpts{From: eth.Addr2})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("list node failed: %s", err.Error())})
+		return
+	}
+	//logger.Info("cp keys:", keys)
+
+	// response key list
+	c.JSON(http.StatusOK, nodes)
 }
 
 // get orders for an user
@@ -599,13 +701,13 @@ func (hc *HandlerCore) GetOrdersHandler(c *gin.Context) {
 	// get contract instance
 	marketIns, err := market.NewMarket(common.HexToAddress(comm.Contracts.Market), backend)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("new market instance failed: %s", err.Error())})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("new market instance failed: %s", err.Error())})
 	}
 
 	// get orders of an user
 	orders, err := marketIns.GetOrders(&bind.CallOpts{}, common.HexToAddress(userAddr))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("get orders failed: %s", err.Error())})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("get orders failed: %s", err.Error())})
 	}
 
 	// response order list

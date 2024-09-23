@@ -525,6 +525,7 @@ func (hc *HandlerCore) GetOrderHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, orderInfo)
 }
 
+/*
 // value of an order
 func (hc *HandlerCore) ValueOrderHandler(c *gin.Context) {
 
@@ -561,6 +562,7 @@ func (hc *HandlerCore) ValueOrderHandler(c *gin.Context) {
 	// response node list
 	c.JSON(http.StatusOK, value)
 }
+*/
 
 // handler for get order list for user or cp
 //

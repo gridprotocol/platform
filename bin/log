@@ -1,11 +1,36 @@
 endpoint: 0.0.0.0:8002
 chain selected:local, chain endpoint:HTTP://127.0.0.1:7545
-contract addresses: {v0.2.1  0x74481a019197185b3FbB8219dd5d8C543a837f74 0xdF87C4555027aaC687D5FEa72826F49F4D866053 0x2EE24E78B4bB96eB17Dea269a4d0e329A35e4675  0x8DEefEae1E34742C5D3904E42B5E69679C92C1E0  }
-{"level":"INFO","time":"2024-09-20T17:13:51+08:00","sub":"server","caller":"server/server.go:29","msg":"Server Start"}
-badger 2024/09/20 17:13:51 INFO: All 0 tables opened in 0s
-badger 2024/09/20 17:13:51 INFO: Replaying file id: 0 at offset: 0
-badger 2024/09/20 17:13:51 INFO: Replay took: 1.791µs
-{"level":"INFO","time":"2024-09-20T17:17:06+08:00","sub":"routes","caller":"routes/handlercore.go:539","msg":"connecting chain"}
-{"level":"INFO","time":"2024-09-20T17:17:06+08:00","sub":"routes","caller":"routes/handlercore.go:541","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-09-20T17:17:06+08:00","sub":"routes","caller":"routes/handlercore.go:559","msg":"order value:40"}
-[GIN] 2024/09/20 - 17:17:06 | 200 |   93.565417ms |             ::1 | GET      "/valueorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
+contract addresses: {v0.2.2  0x8fE261FEFBb49d7bB24c271f9aeB50e078d84dCb 0x6b821114501a28aF0e734ddb386E9ef22451Db64 0x81F9c45ED072b3ed2B0C58ea0ad5F1b2572A7A3A  0x61975082838105bD8156D12d67b0Efe05FD20A93  }
+{"level":"INFO","time":"2024-09-23T16:22:27+08:00","sub":"server","caller":"server/server.go:29","msg":"Server Start"}
+badger 2024/09/23 16:22:27 INFO: All 0 tables opened in 0s
+badger 2024/09/23 16:22:27 INFO: Replaying file id: 0 at offset: 0
+badger 2024/09/23 16:22:27 INFO: Replay took: 4.166µs
+{"level":"INFO","time":"2024-09-23T16:22:50+08:00","sub":"routes","caller":"routes/handlercore.go:268","msg":"connecting chain"}
+{"level":"INFO","time":"2024-09-23T16:22:50+08:00","sub":"routes","caller":"routes/handlercore.go:270","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-09-23T16:22:50+08:00","sub":"routes","caller":"routes/handlercore.go:289","msg":"registry info:{0xEf95c72C836605203F7f66788E450Af2a4141957 cp1 123.123.123.0 testdomain 123}"}
+[GIN] 2024/09/23 - 16:22:50 | 200 |    42.60525ms |             ::1 | GET      "/getcp?address=0xEf95c72C836605203F7f66788E450Af2a4141957"
+{"level":"INFO","time":"2024-09-23T16:22:53+08:00","sub":"routes","caller":"routes/handlercore.go:668","msg":"connecting chain"}
+{"level":"INFO","time":"2024-09-23T16:22:53+08:00","sub":"routes","caller":"routes/handlercore.go:670","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-09-23T16:22:53+08:00","sub":"routes","caller":"routes/handlercore.go:672","msg":"get registry instance"}
+{"level":"INFO","time":"2024-09-23T16:22:53+08:00","sub":"routes","caller":"routes/handlercore.go:680","msg":"call list node"}
+[GIN] 2024/09/23 - 16:22:53 | 200 |   37.926708ms |             ::1 | GET      "/nodes"
+{"level":"INFO","time":"2024-09-23T16:23:16+08:00","sub":"routes","caller":"routes/handlercore.go:502","msg":"connecting chain"}
+{"level":"INFO","time":"2024-09-23T16:23:16+08:00","sub":"routes","caller":"routes/handlercore.go:504","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-09-23T16:23:16+08:00","sub":"routes","caller":"routes/handlercore.go:522","msg":"order info:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957  1 40 40 0 1727079734 1727079734 5 10 2}"}
+[GIN] 2024/09/23 - 16:23:16 | 200 |   58.504625ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
+{"level":"INFO","time":"2024-09-23T16:23:30+08:00","sub":"routes","caller":"routes/handlercore.go:502","msg":"connecting chain"}
+{"level":"INFO","time":"2024-09-23T16:23:30+08:00","sub":"routes","caller":"routes/handlercore.go:504","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-09-23T16:23:31+08:00","sub":"routes","caller":"routes/handlercore.go:522","msg":"order info:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957  1 40 0 40 1727079734 1727079802 5 10 4}"}
+[GIN] 2024/09/23 - 16:23:31 | 200 |   63.654625ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
+{"level":"INFO","time":"2024-09-23T16:27:35+08:00","sub":"routes","caller":"routes/handlercore.go:502","msg":"connecting chain"}
+{"level":"INFO","time":"2024-09-23T16:27:35+08:00","sub":"routes","caller":"routes/handlercore.go:504","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-09-23T16:27:35+08:00","sub":"routes","caller":"routes/handlercore.go:522","msg":"order info:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957  1 4000 4000 0 1727080044 1727080044 5 1000 2}"}
+[GIN] 2024/09/23 - 16:27:35 | 200 |   81.133334ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
+{"level":"INFO","time":"2024-09-23T16:28:01+08:00","sub":"routes","caller":"routes/handlercore.go:502","msg":"connecting chain"}
+{"level":"INFO","time":"2024-09-23T16:28:01+08:00","sub":"routes","caller":"routes/handlercore.go:504","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-09-23T16:28:02+08:00","sub":"routes","caller":"routes/handlercore.go:522","msg":"order info:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957  1 12000 11916 84 1727080044 1727080070 5 3000 2}"}
+[GIN] 2024/09/23 - 16:28:02 | 200 |     54.5735ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
+{"level":"INFO","time":"2024-09-23T16:28:14+08:00","sub":"routes","caller":"routes/handlercore.go:502","msg":"connecting chain"}
+{"level":"INFO","time":"2024-09-23T16:28:14+08:00","sub":"routes","caller":"routes/handlercore.go:504","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-09-23T16:28:14+08:00","sub":"routes","caller":"routes/handlercore.go:522","msg":"order info:{0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957  1 12000 11916 84 1727080044 1727080070 5 3000 2}"}
+[GIN] 2024/09/23 - 16:28:14 | 200 |   48.578875ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"

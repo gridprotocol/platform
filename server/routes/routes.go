@@ -122,7 +122,7 @@ func (r Routes) registerAll(db *kv.Database) {
 	r.GET("/getorder", hc.GetOrderHandler)
 	//r.GET("/listorder", hc.ListOrderHandler)
 	// calc the total value of an order
-	r.GET("/valueorder", hc.ValueOrderHandler)
+	//r.GET("/valueorder", hc.ValueOrderHandler)
 
 	// get provider list
 	r.GET("/getlist", hc.GetListHandler)

@@ -137,6 +137,15 @@ func (r Routes) registerAll(db *kv.Database) {
 	r.POST("/userconfirm", hc.UserConfirmHandler)
 	r.POST("/usercancel", hc.UserCancelHandler)
 
+	// resource info
+	r.GET("/cps", hc.CpsHandler)
+	r.GET("/node-all", hc.NodeAllHandler)
+	r.GET("/node-used", hc.NodeUsedHandler)
+	r.GET("/mem-all", hc.MemAllHandler)
+	r.GET("/mem-used", hc.MemUsedHandler)
+	r.GET("/disk-all", hc.DiskAllHandler)
+	r.GET("/disk-used", hc.DiskUsedHandler)
+
 	// get contracts version
 	r.GET("/version", hc.CurrentVerHandler)
 

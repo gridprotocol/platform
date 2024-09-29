@@ -13,10 +13,10 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
 	"github.com/grid/contracts/eth"
-	"github.com/grid/contracts/go/access"
 	"github.com/grid/contracts/go/credit"
 	"github.com/grid/contracts/go/market"
 	"github.com/grid/contracts/go/registry"
+	"github.com/grid/contracts/go/version"
 	comm "github.com/rockiecn/platform/common"
 	"github.com/rockiecn/platform/lib/kv"
 )
@@ -716,6 +716,209 @@ func (hc *HandlerCore) GetOrdersHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, orders)
 }
 
+// get cp number
+func (hc *HandlerCore) CpsHandler(c *gin.Context) {
+	// connect to an eth node with ep
+	logger.Info("connecting chain")
+	backend, chainID := eth.ConnETH(Chain_Endpoint)
+	logger.Info("chain id:", chainID)
+
+	logger.Info("get registry instance")
+	// get contract instance
+	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("new market instance failed: %s", err.Error())})
+		return
+	}
+
+	logger.Info("getting cp number")
+
+	//
+	r, err := regIns.CpNumber(&bind.CallOpts{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("call contract failed: %s", err.Error())})
+		return
+	}
+	//logger.Info("cp keys:", keys)
+
+	// response
+	c.JSON(http.StatusOK, r)
+}
+
+// get node all
+func (hc *HandlerCore) NodeAllHandler(c *gin.Context) {
+	// connect to an eth node with ep
+	logger.Info("connecting chain")
+	backend, chainID := eth.ConnETH(Chain_Endpoint)
+	logger.Info("chain id:", chainID)
+
+	logger.Info("get registry instance")
+	// get contract instance
+	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("new market instance failed: %s", err.Error())})
+		return
+	}
+
+	logger.Info("getting node all")
+
+	//
+	r, err := regIns.NodeTotal(&bind.CallOpts{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("call contract failed: %s", err.Error())})
+		return
+	}
+	//logger.Info("cp keys:", keys)
+
+	// response
+	c.JSON(http.StatusOK, r)
+}
+
+// get node used
+func (hc *HandlerCore) NodeUsedHandler(c *gin.Context) {
+	// connect to an eth node with ep
+	logger.Info("connecting chain")
+	backend, chainID := eth.ConnETH(Chain_Endpoint)
+	logger.Info("chain id:", chainID)
+
+	logger.Info("get registry instance")
+	// get contract instance
+	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("new market instance failed: %s", err.Error())})
+		return
+	}
+
+	logger.Info("getting node Used")
+
+	//
+	r, err := regIns.NodeUsed(&bind.CallOpts{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("call contract failed: %s", err.Error())})
+		return
+	}
+	//logger.Info("cp keys:", keys)
+
+	// response
+	c.JSON(http.StatusOK, r)
+}
+
+// get mem all
+func (hc *HandlerCore) MemAllHandler(c *gin.Context) {
+	// connect to an eth node with ep
+	logger.Info("connecting chain")
+	backend, chainID := eth.ConnETH(Chain_Endpoint)
+	logger.Info("chain id:", chainID)
+
+	logger.Info("get registry instance")
+	// get contract instance
+	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("new market instance failed: %s", err.Error())})
+		return
+	}
+
+	logger.Info("getting mem all")
+
+	//
+	r, err := regIns.MemTotal(&bind.CallOpts{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("call contract failed: %s", err.Error())})
+		return
+	}
+	//logger.Info("cp keys:", keys)
+
+	// response
+	c.JSON(http.StatusOK, r)
+}
+
+// get mem used
+func (hc *HandlerCore) MemUsedHandler(c *gin.Context) {
+	// connect to an eth node with ep
+	logger.Info("connecting chain")
+	backend, chainID := eth.ConnETH(Chain_Endpoint)
+	logger.Info("chain id:", chainID)
+
+	logger.Info("get registry instance")
+	// get contract instance
+	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("new market instance failed: %s", err.Error())})
+		return
+	}
+
+	logger.Info("getting mem Used")
+
+	//
+	r, err := regIns.MemUsed(&bind.CallOpts{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("call contract failed: %s", err.Error())})
+		return
+	}
+	//logger.Info("cp keys:", keys)
+
+	// response
+	c.JSON(http.StatusOK, r)
+}
+
+// get disk all
+func (hc *HandlerCore) DiskAllHandler(c *gin.Context) {
+	// connect to an eth node with ep
+	logger.Info("connecting chain")
+	backend, chainID := eth.ConnETH(Chain_Endpoint)
+	logger.Info("chain id:", chainID)
+
+	logger.Info("get registry instance")
+	// get contract instance
+	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("new market instance failed: %s", err.Error())})
+		return
+	}
+
+	logger.Info("getting disk all")
+
+	//
+	r, err := regIns.DiskTotal(&bind.CallOpts{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("call contract failed: %s", err.Error())})
+		return
+	}
+	//logger.Info("cp keys:", keys)
+
+	// response
+	c.JSON(http.StatusOK, r)
+}
+
+// get disk used
+func (hc *HandlerCore) DiskUsedHandler(c *gin.Context) {
+	// connect to an eth node with ep
+	logger.Info("connecting chain")
+	backend, chainID := eth.ConnETH(Chain_Endpoint)
+	logger.Info("chain id:", chainID)
+
+	logger.Info("get registry instance")
+	// get contract instance
+	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("new market instance failed: %s", err.Error())})
+		return
+	}
+
+	logger.Info("getting disk Used")
+
+	//
+	r, err := regIns.DiskUsed(&bind.CallOpts{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("call contract failed: %s", err.Error())})
+		return
+	}
+	//logger.Info("cp keys:", keys)
+
+	// response
+	c.JSON(http.StatusOK, r)
+}
+
 // qeury credit for a role with address
 //
 //	@Summary		QueryCredit
@@ -756,21 +959,21 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 
 // get current version of contracts
 func (hc *HandlerCore) CurrentVerHandler(c *gin.Context) {
-	accAddr := comm.Contracts.Access
+	verAddr := comm.Contracts.Version
 
 	// connect to an eth node with ep
 	backend, chainID := eth.ConnETH(Chain_Endpoint)
 	fmt.Println("chain id:", chainID)
 
-	// get registry instance
-	accIns, err := access.NewAccess(common.HexToAddress(accAddr), backend)
+	// version instance
+	verIns, err := version.NewVersion(common.HexToAddress(verAddr), backend)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	//
-	ver, err := accIns.CurrentVer(&bind.CallOpts{})
+	// call version
+	ver, err := verIns.CurrentVer(&bind.CallOpts{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

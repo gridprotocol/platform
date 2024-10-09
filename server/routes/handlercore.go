@@ -219,6 +219,11 @@ func (hc *HandlerCore) ReviseHandler(c *gin.Context) {
 //
 //	@Router			/listcp/ [get]
 func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
+	start := c.Query("start")
+	num := c.Query("num")
+
+	s, _ := new(big.Int).SetString(start, 10)
+	n, _ := new(big.Int).SetString(num, 10)
 
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
@@ -234,7 +239,7 @@ func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 	}
 
 	// get cp list
-	list, err := registryIns.GetList(&bind.CallOpts{})
+	list, _, err := registryIns.GetList(&bind.CallOpts{}, s, n)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("get cp keys failed: %s", err.Error()).Error()})
 		return

@@ -58,11 +58,11 @@ var runCmd = &cli.Command{
 		// select contracts addresses for each chain
 		switch chain {
 		case "local":
-			chain_ep = eth.Endpoint
+			chain_ep = eth.Ganache
 			common.Contracts = common.LocalContracts.Contracts
 
 		case "sepo":
-			chain_ep = eth.Endpoint2
+			chain_ep = eth.Sepolia
 			common.Contracts = common.SepoContracts.Contracts
 		}
 		fmt.Printf("chain selected:%s, chain endpoint:%s\n", chain, chain_ep)

@@ -48,10 +48,10 @@ var TopupCmd = &cli.Command{
 		var ep string
 		switch chain {
 		case "local":
-			ep = eth.Endpoint
+			ep = eth.Ganache
 			comm.Contracts = comm.LocalContracts.Contracts
 		case "sepo":
-			ep = eth.Endpoint2
+			ep = eth.Sepolia
 			comm.Contracts = comm.SepoContracts.Contracts
 		}
 

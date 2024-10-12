@@ -59,7 +59,7 @@ func (hc *HandlerCore) RootHandler(c *gin.Context) {
 }
 
 // handler of cp login
-//
+/*
 //	@Summary		Regist CP
 //	@Description	Regist CP
 //	@Tags			RegistCP
@@ -72,13 +72,14 @@ func (hc *HandlerCore) RootHandler(c *gin.Context) {
 //	@Param			priCPU		formData	string	true	"price cpu"
 //	@Param			numGPU		formData	string	true	"num"
 //	@Param			priGPU		formData	string	false	"price"
-//	@Param			numDisk	formData	string	true	"num"
-//	@Param			priDisk	formData	string	false	"price"
+//	@Param			numDisk		formData	string	true	"num"
+//	@Param			priDisk		formData	string	false	"price"
 //	@Param			numMem		formData	string	true	"num"
 //	@Param			priMem		formData	string	false	"price"
 //	@Success		200			{object}	string	"regist OK"
 //	@Failure		400			{object}	string	"bad request"
 //	@Router			/registcp [post]
+*/
 func (hc *HandlerCore) RegistCPHandler(c *gin.Context) {
 	// provider wallet address
 	cpAddr := c.PostForm("address")
@@ -214,9 +215,10 @@ func (hc *HandlerCore) ReviseHandler(c *gin.Context) {
 //	@Tags			Listcps
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	[]CPInfo
-//	@Failure		404	{object}	string	"page not found"
-//
+//	@Param			start	query		string	true	"start"
+//	@Param			num		query		string	true	"number"
+//	@Success		200		{object}	[]CPInfo
+//	@Failure		404		{object}	string	"page not found"
 //	@Router			/listcp/ [get]
 func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 	start := c.Query("start")
@@ -255,7 +257,7 @@ func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 //
 //	@Summary		get a provider
 //	@Description	get a provider's info
-//	@Tags			get cp
+//	@Tags			Get Provider Info
 //	@Accept			json
 //	@Produce		json
 //	@Param			address	query		string	true	"address of a provider"
@@ -336,6 +338,18 @@ func (hc *HandlerCore) ApproveHandler(c *gin.Context) {
 }
 
 // check credit allowance
+// AllowanceHandler godoc
+//
+//	@Summary		Check Allowance
+//	@Description	check the allowance between an owner and a spender
+//	@Tags			Allowance
+//	@Accept			json
+//	@Produce		json
+//	@Param			owner	query		string	true	"owner"
+//	@Param			spender	query		string	true	"spender"
+//	@Success		200		{object}	int
+//	@Failure		404		{object}	string	"page not found"
+//	@Router			/allowance/ [get]
 func (hc *HandlerCore) AllowanceHandler(c *gin.Context) {
 	// param in form
 	owner := c.Query("owner")
@@ -367,7 +381,7 @@ func (hc *HandlerCore) AllowanceHandler(c *gin.Context) {
 }
 
 // handler of create order
-//
+/*
 //	@Summary		Create order
 //	@Description	create an order
 //	@Tags			CreateOrder
@@ -379,14 +393,15 @@ func (hc *HandlerCore) AllowanceHandler(c *gin.Context) {
 //	@Param			priCPU		formData	string	true	"price cpu"
 //	@Param			numGPU		formData	string	true	"num"
 //	@Param			priGPU		formData	string	false	"price"
-//	@Param			numDisk	formData	string	true	"num"
-//	@Param			priDisk	formData	string	false	"price"
+//	@Param			numDisk		formData	string	true	"num"
+//	@Param			priDisk		formData	string	false	"price"
 //	@Param			numMem		formData	string	true	"num"
 //	@Param			priMem		formData	string	false	"price"
 //	@Param			duration	formData	string	true	"duration"
 //	@Success		200			{object}	string	"regist OK"
 //	@Failure		400			{object}	string	"bad request"
 //	@Router			/createorder [post]
+*/
 func (hc *HandlerCore) CreateOrderHandler(c *gin.Context) {
 	// tx data in form
 	txData := c.PostForm("tx")
@@ -494,6 +509,18 @@ func (hc *HandlerCore) UserCancelHandler(c *gin.Context) {
 }
 
 // handler for getOrder
+// GetOrderHandler godoc
+//
+//	@Summary		Get Order
+//	@Description	get an order info
+//	@Tags			Get Order
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	query		string	true	"user"
+//	@Param			cp		query		string	true	"cp"
+//	@Success		200		{object}	int
+//	@Failure		404		{object}	string	"page not found"
+//	@Router			/getorder/ [get]
 func (hc *HandlerCore) GetOrderHandler(c *gin.Context) {
 
 	// user and cp
@@ -578,7 +605,6 @@ func (hc *HandlerCore) ValueOrderHandler(c *gin.Context) {
 //	@Produce		json
 //	@Param			role	query		string	true	"user or provider"
 //	@Param			address	query		string	true	"address"
-//
 //	@Success		200		{object}	string	"list OK"
 //	@Failure		400		{object}	string	"bad request"
 //	@Router			/listorder [get]
@@ -634,6 +660,18 @@ func (hc *HandlerCore) GetListHandler(c *gin.Context) {
 }
 
 // get a node info
+// GetNodeHandler godoc
+//
+//	@Summary		Node
+//	@Description	Get a node of a cp with node id
+//	@Tags			Get Node
+//	@Accept			json
+//	@Produce		json
+//	@Param			cp	query		string	true	"cp address"
+//	@Param			id	query		string	true	"node id"
+//	@Success		200	{object}	int
+//	@Failure		404	{object}	string	"page not found"
+//	@Router			/node/ [get]
 func (hc *HandlerCore) GetNodeHandler(c *gin.Context) {
 	cp := c.Query("cp")
 	id := c.Query("id")
@@ -668,7 +706,20 @@ func (hc *HandlerCore) GetNodeHandler(c *gin.Context) {
 }
 
 // list node for a proivder
+// GetNodesHandler godoc
+//
+//	@Summary		Nodes
+//	@Description	Get all nodes of this provider
+//	@Tags			Get Nodes
+//	@Accept			json
+//	@Produce		json
+//	@Param			cp	query		string	true	"cp address"
+//	@Success		200	{object}	int
+//	@Failure		404	{object}	string	"page not found"
+//	@Router			/nodes/ [get]
 func (hc *HandlerCore) GetNodesHandler(c *gin.Context) {
+	cp := c.Query("cp")
+
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
 	backend, chainID := eth.ConnETH(Chain_Endpoint)
@@ -685,7 +736,7 @@ func (hc *HandlerCore) GetNodesHandler(c *gin.Context) {
 	logger.Info("call list node")
 
 	// get node list
-	nodes, err := regIns.ListNode(&bind.CallOpts{From: eth.Addr2})
+	nodes, err := regIns.ListNode(&bind.CallOpts{}, common.HexToAddress(cp))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("list node failed: %s", err.Error())})
 		return
@@ -697,6 +748,17 @@ func (hc *HandlerCore) GetNodesHandler(c *gin.Context) {
 }
 
 // get orders for an user
+// GetOrdersHandler godoc
+//
+//	@Summary		Get Orders
+//	@Description	get all orders of an user
+//	@Tags			Get Orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	query		string	true	"user"
+//	@Success		200		{object}	int
+//	@Failure		404		{object}	string	"page not found"
+//	@Router			/getorders/ [get]
 func (hc *HandlerCore) GetOrdersHandler(c *gin.Context) {
 	userAddr := c.Query("user")
 
@@ -722,6 +784,16 @@ func (hc *HandlerCore) GetOrdersHandler(c *gin.Context) {
 }
 
 // get cp number
+// CpsHandler godoc
+//
+//	@Summary		Get CP number
+//	@Description	get cp number
+//	@Tags			Get CP Number
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	int
+//	@Failure		404	{object}	string	"page not found"
+//	@Router			/cps/ [get]
 func (hc *HandlerCore) CpsHandler(c *gin.Context) {
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
@@ -751,6 +823,16 @@ func (hc *HandlerCore) CpsHandler(c *gin.Context) {
 }
 
 // get node all
+// NodeAllHandler godoc
+//
+//	@Summary		All Node Number
+//	@Description	all node number
+//	@Tags			Node All
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	int
+//	@Failure		404	{object}	string	"page not found"
+//	@Router			/node-all/ [get]
 func (hc *HandlerCore) NodeAllHandler(c *gin.Context) {
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
@@ -780,6 +862,16 @@ func (hc *HandlerCore) NodeAllHandler(c *gin.Context) {
 }
 
 // get node used
+// NodeUsedHandler godoc
+//
+//	@Summary		Used Node Number
+//	@Description	used node number
+//	@Tags			Node Used
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	int
+//	@Failure		404	{object}	string	"page not found"
+//	@Router			/node-used/ [get]
 func (hc *HandlerCore) NodeUsedHandler(c *gin.Context) {
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
@@ -809,6 +901,16 @@ func (hc *HandlerCore) NodeUsedHandler(c *gin.Context) {
 }
 
 // get mem all
+// MemAllHandler godoc
+//
+//	@Summary		Total Memory
+//	@Description	total memory space
+//	@Tags			Total Memory
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	int
+//	@Failure		404	{object}	string	"page not found"
+//	@Router			/mem-all/ [get]
 func (hc *HandlerCore) MemAllHandler(c *gin.Context) {
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
@@ -838,6 +940,16 @@ func (hc *HandlerCore) MemAllHandler(c *gin.Context) {
 }
 
 // get mem used
+// MemUsedHandler godoc
+//
+//	@Summary		Used Memory
+//	@Description	used memory space
+//	@Tags			Used Memory
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	int
+//	@Failure		404	{object}	string	"page not found"
+//	@Router			/mem-used/ [get]
 func (hc *HandlerCore) MemUsedHandler(c *gin.Context) {
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
@@ -867,6 +979,16 @@ func (hc *HandlerCore) MemUsedHandler(c *gin.Context) {
 }
 
 // get disk all
+// DiskAllHandler godoc
+//
+//	@Summary		Total Store
+//	@Description	total store space
+//	@Tags			Total Store
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	int
+//	@Failure		404	{object}	string	"page not found"
+//	@Router			/disk-all/ [get]
 func (hc *HandlerCore) DiskAllHandler(c *gin.Context) {
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
@@ -896,6 +1018,16 @@ func (hc *HandlerCore) DiskAllHandler(c *gin.Context) {
 }
 
 // get disk used
+// DiskUsedHandler godoc
+//
+//	@Summary		Used Store
+//	@Description	used store space
+//	@Tags			Used Store
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	int
+//	@Failure		404	{object}	string	"page not found"
+//	@Router			/disk-used/ [get]
 func (hc *HandlerCore) DiskUsedHandler(c *gin.Context) {
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
@@ -931,7 +1063,6 @@ func (hc *HandlerCore) DiskUsedHandler(c *gin.Context) {
 //	@Tags			QueryCredit
 //	@Accept			json
 //	@Produce		json
-//	@Param			role	query		string	true	"role of this caller"
 //	@Param			address	query		string	true	"address of this caller"
 //	@Success		200		{object}	string	"query OK"
 //	@Failure		400		{object}	string	"bad request"
@@ -963,6 +1094,17 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 }
 
 // get current version of contracts
+
+// handler of version
+//
+//	@Summary		version
+//	@Description	get version
+//	@Tags			Version
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Success		200	{object}	string	"version OK"
+//	@Failure		400	{object}	string	"bad request"
+//	@Router			/version [get]
 func (hc *HandlerCore) CurrentVerHandler(c *gin.Context) {
 	verAddr := comm.Contracts.Version
 

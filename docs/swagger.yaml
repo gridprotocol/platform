@@ -26,7 +26,7 @@ definitions:
       priStore:
         type: string
     type: object
-host: localhost:8081
+host: localhost:8002
 info:
   contact: {}
   description: This is the grid platform
@@ -48,78 +48,93 @@ paths:
       summary: welcome
       tags:
       - Welcome
-  /createorder:
-    post:
+  /allowance/:
+    get:
       consumes:
-      - multipart/form-data
-      description: create an order
+      - application/json
+      description: check the allowance between an owner and a spender
       parameters:
-      - description: user address
-        in: formData
-        name: userAddress
+      - description: owner
+        in: query
+        name: owner
         required: true
         type: string
-      - description: cpAddress
-        in: formData
-        name: cpAddress
-        required: true
-        type: string
-      - description: num cpu
-        in: formData
-        name: numCPU
-        required: true
-        type: string
-      - description: price cpu
-        in: formData
-        name: priCPU
-        required: true
-        type: string
-      - description: num
-        in: formData
-        name: numGPU
-        required: true
-        type: string
-      - description: price
-        in: formData
-        name: priGPU
-        type: string
-      - description: num
-        in: formData
-        name: numStore
-        required: true
-        type: string
-      - description: price
-        in: formData
-        name: priStore
-        type: string
-      - description: num
-        in: formData
-        name: numMem
-        required: true
-        type: string
-      - description: price
-        in: formData
-        name: priMem
-        type: string
-      - description: duration
-        in: formData
-        name: duration
+      - description: spender
+        in: query
+        name: spender
         required: true
         type: string
       produces:
       - application/json
       responses:
         "200":
-          description: regist OK
+          description: OK
+          schema:
+            type: integer
+        "404":
+          description: page not found
           schema:
             type: string
-        "400":
-          description: bad request
-          schema:
-            type: string
-      summary: Create order
+      summary: Check Allowance
       tags:
-      - CreateOrder
+      - Allowance
+  /cps/:
+    get:
+      consumes:
+      - application/json
+      description: get cp number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "404":
+          description: page not found
+          schema:
+            type: string
+      summary: Get CP number
+      tags:
+      - Get CP Number
+  /disk-all/:
+    get:
+      consumes:
+      - application/json
+      description: total store space
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "404":
+          description: page not found
+          schema:
+            type: string
+      summary: Total Store
+      tags:
+      - Total Store
+  /disk-used/:
+    get:
+      consumes:
+      - application/json
+      description: used store space
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "404":
+          description: page not found
+          schema:
+            type: string
+      summary: Used Store
+      tags:
+      - Used Store
   /getcp/:
     get:
       consumes:
@@ -148,12 +163,78 @@ paths:
             type: string
       summary: get a provider
       tags:
-      - get cp
+      - Get Provider Info
+  /getorder/:
+    get:
+      consumes:
+      - application/json
+      description: get an order info
+      parameters:
+      - description: user
+        in: query
+        name: user
+        required: true
+        type: string
+      - description: cp
+        in: query
+        name: cp
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "404":
+          description: page not found
+          schema:
+            type: string
+      summary: Get Order
+      tags:
+      - Get Order
+  /getorders/:
+    get:
+      consumes:
+      - application/json
+      description: get all orders of an user
+      parameters:
+      - description: user
+        in: query
+        name: user
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "404":
+          description: page not found
+          schema:
+            type: string
+      summary: Get Orders
+      tags:
+      - Get Orders
   /listcp/:
     get:
       consumes:
       - application/json
       description: list all providers
+      parameters:
+      - description: start
+        in: query
+        name: start
+        required: true
+        type: string
+      - description: number
+        in: query
+        name: num
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -170,122 +251,143 @@ paths:
       summary: List all providers
       tags:
       - Listcps
-  /listorder:
+  /mem-all/:
     get:
       consumes:
       - application/json
-      description: list an order
-      parameters:
-      - description: user or provider
-        in: query
-        name: role
-        required: true
-        type: string
-      - description: address
-        in: query
-        name: address
-        required: true
-        type: string
+      description: total memory space
       produces:
       - application/json
       responses:
         "200":
-          description: list OK
+          description: OK
+          schema:
+            type: integer
+        "404":
+          description: page not found
           schema:
             type: string
-        "400":
-          description: bad request
-          schema:
-            type: string
-      summary: List order
+      summary: Total Memory
       tags:
-      - ListOrder
-  /listpay:
+      - Total Memory
+  /mem-used/:
     get:
       consumes:
       - application/json
-      description: ListPay
-      parameters:
-      - description: address of an user
-        in: query
-        name: addr
-        required: true
-        type: string
+      description: used memory space
       produces:
       - application/json
       responses:
         "200":
-          description: list pay OK
+          description: OK
+          schema:
+            type: integer
+        "404":
+          description: page not found
           schema:
             type: string
-        "400":
-          description: bad request
-          schema:
-            type: string
-      summary: ListPay
+      summary: Used Memory
       tags:
-      - ListPay
-  /listtransfer:
+      - Used Memory
+  /node-all/:
     get:
       consumes:
       - application/json
-      description: List all transfers of an address
-      parameters:
-      - description: address to show list
-        in: query
-        name: address
-        required: true
-        type: string
+      description: all node number
       produces:
       - application/json
       responses:
         "200":
-          description: list transfer OK
+          description: OK
+          schema:
+            type: integer
+        "404":
+          description: page not found
           schema:
             type: string
-        "400":
-          description: bad request
-          schema:
-            type: string
-      summary: List all transfers
+      summary: All Node Number
       tags:
-      - List transfers
-  /pay:
-    post:
+      - Node All
+  /node-used/:
+    get:
       consumes:
-      - multipart/form-data
-      description: Pay to credit with a transfer's key
+      - application/json
+      description: used node number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "404":
+          description: page not found
+          schema:
+            type: string
+      summary: Used Node Number
+      tags:
+      - Node Used
+  /node/:
+    get:
+      consumes:
+      - application/json
+      description: Get a node of a cp with node id
       parameters:
-      - description: transfer key
-        in: formData
-        name: transkey
+      - description: cp address
+        in: query
+        name: cp
+        required: true
+        type: string
+      - description: node id
+        in: query
+        name: id
         required: true
         type: string
       produces:
       - application/json
       responses:
         "200":
-          description: pay OK
+          description: OK
+          schema:
+            type: integer
+        "404":
+          description: page not found
           schema:
             type: string
-        "400":
-          description: bad request
-          schema:
-            type: string
-      summary: Pay for credit
+      summary: Node
       tags:
-      - Pay
+      - Get Node
+  /nodes/:
+    get:
+      consumes:
+      - application/json
+      description: Get all nodes of this provider
+      parameters:
+      - description: cp address
+        in: query
+        name: cp
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "404":
+          description: page not found
+          schema:
+            type: string
+      summary: Nodes
+      tags:
+      - Get Nodes
   /querycredit:
     get:
       consumes:
       - application/json
       description: Query credit of someone
       parameters:
-      - description: role of this caller
-        in: query
-        name: role
-        required: true
-        type: string
       - description: address of this caller
         in: query
         name: address
@@ -305,141 +407,23 @@ paths:
       summary: QueryCredit
       tags:
       - QueryCredit
-  /refreshtransfer:
-    post:
-      consumes:
-      - application/json
-      description: Refresh status of transfer of an address
-      parameters:
-      - description: address to refresh
-        in: query
-        name: address
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: refresh OK
-          schema:
-            type: string
-        "400":
-          description: bad request
-          schema:
-            type: string
-      summary: RefreshTransfer status of transfer
-      tags:
-      - Refresh Transfer
-  /registcp:
-    post:
+  /version:
+    get:
       consumes:
       - multipart/form-data
-      description: Regist CP
-      parameters:
-      - description: name
-        in: formData
-        name: name
-        required: true
-        type: string
-      - description: address
-        in: formData
-        name: address
-        required: true
-        type: string
-      - description: endpoint
-        in: formData
-        name: endpoint
-        required: true
-        type: string
-      - description: num cpu
-        in: formData
-        name: numCPU
-        required: true
-        type: string
-      - description: price cpu
-        in: formData
-        name: priCPU
-        required: true
-        type: string
-      - description: num
-        in: formData
-        name: numGPU
-        required: true
-        type: string
-      - description: price
-        in: formData
-        name: priGPU
-        type: string
-      - description: num
-        in: formData
-        name: numStore
-        required: true
-        type: string
-      - description: price
-        in: formData
-        name: priStore
-        type: string
-      - description: num
-        in: formData
-        name: numMem
-        required: true
-        type: string
-      - description: price
-        in: formData
-        name: priMem
-        type: string
+      description: get version
       produces:
       - application/json
       responses:
         "200":
-          description: regist OK
+          description: version OK
           schema:
             type: string
         "400":
           description: bad request
           schema:
             type: string
-      summary: Regist CP
+      summary: version
       tags:
-      - RegistCP
-  /transfer:
-    post:
-      consumes:
-      - application/json
-      description: user transfer token to platform
-      parameters:
-      - description: tx hash
-        in: query
-        name: txHash
-        required: true
-        type: string
-      - description: from addr
-        in: query
-        name: from
-        required: true
-        type: string
-      - description: to addr
-        in: query
-        name: to
-        required: true
-        type: string
-      - description: transfer value
-        in: query
-        name: value
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: transfer OK
-          schema:
-            type: string
-        "400":
-          description: bad request
-          schema:
-            type: string
-      summary: Transfer token
-      tags:
-      - Transfer
+      - Version
 swagger: "2.0"

@@ -1,150 +1,37 @@
 endpoint: 0.0.0.0:8002
 chain selected:local, chain endpoint:HTTP://127.0.0.1:7545
-contract addresses: {v0.3.0 0xb3B9b593eE30FC2Db8d92d19A7Fd9C6625cace9f 0x98359d43A6CeC2C91117854451d884daB9828b7C  0x4C74EAaeCeAa981f7299b656066dCbc576c87D75 0x636A02ac313b3787Bed206EE87cf8cC55E927E3C 0xDc9EaEE5C2152B6396FD9ce43c81601CC9C43628  0x157C4F3667EA2FC2314BF3a68d524A18355d46e4  }
-{"level":"INFO","time":"2024-10-09T16:11:00+08:00","sub":"server","caller":"server/server.go:29","msg":"Server Start"}
-badger 2024/10/09 16:11:00 INFO: All 0 tables opened in 0s
-badger 2024/10/09 16:11:00 INFO: Replaying file id: 0 at offset: 0
-badger 2024/10/09 16:11:00 INFO: Replay took: 3.125µs
-chain id: 1337
-[GIN] 2024/10/09 - 16:11:05 | 200 |   30.892375ms |             ::1 | GET      "/version"
-chain id: 1337
-[GIN] 2024/10/09 - 16:11:18 | 200 |   16.045375ms |             ::1 | GET      "/querycredit?address=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
-chain id: 1337
-[GIN] 2024/10/09 - 16:11:29 | 200 |    18.32625ms |             ::1 | GET      "/querycredit?address=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
-{"level":"INFO","time":"2024-10-09T16:14:25+08:00","sub":"routes","caller":"routes/handlercore.go:273","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:14:25+08:00","sub":"routes","caller":"routes/handlercore.go:275","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:14:25+08:00","sub":"routes","caller":"routes/handlercore.go:294","msg":"registry info:{0xEf95c72C836605203F7f66788E450Af2a4141957 cp1 123.123.123.0 testdomain 123}"}
-[GIN] 2024/10/09 - 16:14:25 | 200 |   39.143042ms |             ::1 | GET      "/getcp?address=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-10-09T16:14:30+08:00","sub":"routes","caller":"routes/handlercore.go:229","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:14:30+08:00","sub":"routes","caller":"routes/handlercore.go:231","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:14:30+08:00","sub":"routes","caller":"routes/handlercore.go:233","msg":"registry address: 0x157C4F3667EA2FC2314BF3a68d524A18355d46e4"}
-
-
-[31m2024/10/09 16:14:30 [Recovery] 2024/10/09 - 16:14:30 panic recovered:
-reflect: call of reflect.Value.Type on zero Value
-/usr/local/go/src/reflect/value.go:2699 (0x10424a3b3)
-	Value.typeSlow: panic(&ValueError{"reflect.Value.Type", Invalid})
-/usr/local/go/src/reflect/value.go:2694 (0x1045be54b)
-	Value.Type: return v.typeSlow()
-/Users/wy/go/pkg/mod/github.com/ethereum/go-ethereum@v1.14.5/accounts/abi/reflect.go:56 (0x1045be518)
-	indirect: if v.Kind() == reflect.Ptr && v.Elem().Type() != reflect.TypeOf(big.Int{}) {
-/Users/wy/go/pkg/mod/github.com/ethereum/go-ethereum@v1.14.5/accounts/abi/type.go:269 (0x1045c187b)
-	Type.pack: v = indirect(v)
-/Users/wy/go/pkg/mod/github.com/ethereum/go-ethereum@v1.14.5/accounts/abi/argument.go:241 (0x1045baf13)
-	Arguments.Pack: packed, err := input.Type.pack(reflect.ValueOf(a))
-/Users/wy/go/pkg/mod/github.com/ethereum/go-ethereum@v1.14.5/accounts/abi/abi.go:77 (0x1045b7c03)
-	ABI.Pack: arguments, err := method.Inputs.Pack(args...)
-/Users/wy/go/pkg/mod/github.com/ethereum/go-ethereum@v1.14.5/accounts/abi/bind/base.go:166 (0x1045cfb17)
-	(*BoundContract).Call: input, err := c.abi.Pack(method, params...)
-/Users/wy/work/grid/github/grid-contracts/go/registry/registry.go:382 (0x1048ced67)
-	(*RegistryCaller).GetList: err := _Registry.contract.Call(opts, &out, "getList", start, num)
-/Users/wy/work/grid/github/platform/server/routes/handlercore.go:242 (0x10497030b)
-	(*HandlerCore).ListCPHandler: list, _, err := registryIns.GetList(&bind.CallOpts{}, s, n)
-/Users/wy/go/pkg/mod/github.com/gin-gonic/gin@v1.9.1/context.go:174 (0x10475214f)
-	(*Context).Next: c.handlers[c.index](c)
-/Users/wy/work/grid/github/platform/server/routes/handlercore.go:1006 (0x104976e9f)
-	RegistRoutes.cors.func1: c.Next()
-/Users/wy/go/pkg/mod/github.com/gin-gonic/gin@v1.9.1/context.go:174 (0x10475e353)
-	(*Context).Next: c.handlers[c.index](c)
-/Users/wy/go/pkg/mod/github.com/gin-gonic/gin@v1.9.1/recovery.go:102 (0x10475e334)
-	CustomRecoveryWithWriter.func1: c.Next()
-/Users/wy/go/pkg/mod/github.com/gin-gonic/gin@v1.9.1/context.go:174 (0x10475d6f3)
-	(*Context).Next: c.handlers[c.index](c)
-/Users/wy/go/pkg/mod/github.com/gin-gonic/gin@v1.9.1/logger.go:240 (0x10475d6d0)
-	LoggerWithConfig.func1: c.Next()
-/Users/wy/go/pkg/mod/github.com/gin-gonic/gin@v1.9.1/context.go:174 (0x10475cc27)
-	(*Context).Next: c.handlers[c.index](c)
-/Users/wy/go/pkg/mod/github.com/gin-gonic/gin@v1.9.1/gin.go:620 (0x10475c95c)
-	(*Engine).handleHTTPRequest: c.Next()
-/Users/wy/go/pkg/mod/github.com/gin-gonic/gin@v1.9.1/gin.go:576 (0x10475c583)
-	(*Engine).ServeHTTP: engine.handleHTTPRequest(c)
-/usr/local/go/src/net/http/server.go:3137 (0x10445a2db)
-	serverHandler.ServeHTTP: handler.ServeHTTP(rw, req)
-/usr/local/go/src/net/http/server.go:2039 (0x104455a97)
-	(*conn).serve: serverHandler{c.server}.ServeHTTP(w, w.req)
-/usr/local/go/src/runtime/asm_arm64.s:1222 (0x10420f5f3)
-	goexit: MOVD	R0, R0	// NOP
-[0m
-[GIN] 2024/10/09 - 16:14:30 | 500 |   11.368333ms |             ::1 | GET      "/listcp"
-{"level":"INFO","time":"2024-10-09T16:14:33+08:00","sub":"routes","caller":"routes/handlercore.go:507","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:14:33+08:00","sub":"routes","caller":"routes/handlercore.go:509","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:14:33+08:00","sub":"routes","caller":"routes/handlercore.go:527","msg":"order info:{ 1 40 0 1728461653 1728461653 5 10 2}"}
-[GIN] 2024/10/09 - 16:14:33 | 200 |    25.08675ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-10-09T16:14:39+08:00","sub":"routes","caller":"routes/handlercore.go:507","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:14:39+08:00","sub":"routes","caller":"routes/handlercore.go:509","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:14:39+08:00","sub":"routes","caller":"routes/handlercore.go:527","msg":"order info:{ 1 40 0 1728461653 1728461653 5 10 2}"}
-[GIN] 2024/10/09 - 16:14:39 | 200 |   25.232042ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-10-09T16:14:59+08:00","sub":"routes","caller":"routes/handlercore.go:614","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:14:59+08:00","sub":"routes","caller":"routes/handlercore.go:616","msg":"chain id:1337"}
-[GIN] 2024/10/09 - 16:14:59 | 200 |   19.302833ms |             ::1 | GET      "/getlist?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&start=0&num=1"
-{"level":"INFO","time":"2024-10-09T16:15:04+08:00","sub":"routes","caller":"routes/handlercore.go:614","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:15:04+08:00","sub":"routes","caller":"routes/handlercore.go:616","msg":"chain id:1337"}
-[GIN] 2024/10/09 - 16:15:04 | 200 |   19.187083ms |             ::1 | GET      "/getlist?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&start=0&num=2"
-{"level":"INFO","time":"2024-10-09T16:15:11+08:00","sub":"routes","caller":"routes/handlercore.go:614","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:15:11+08:00","sub":"routes","caller":"routes/handlercore.go:616","msg":"chain id:1337"}
-[GIN] 2024/10/09 - 16:15:11 | 200 |   18.438292ms |             ::1 | GET      "/getlist?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&start=0&num=2"
-{"level":"INFO","time":"2024-10-09T16:15:17+08:00","sub":"routes","caller":"routes/handlercore.go:642","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:15:17+08:00","sub":"routes","caller":"routes/handlercore.go:644","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:15:17+08:00","sub":"routes","caller":"routes/handlercore.go:646","msg":"get registry instance"}
-{"level":"INFO","time":"2024-10-09T16:15:17+08:00","sub":"routes","caller":"routes/handlercore.go:654","msg":"call list node"}
-[GIN] 2024/10/09 - 16:15:17 | 200 |   39.527208ms |             ::1 | GET      "/node?cp=0xEf95c72C836605203F7f66788E450Af2a4141957&id=1"
-{"level":"INFO","time":"2024-10-09T16:15:47+08:00","sub":"routes","caller":"routes/handlercore.go:673","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:15:47+08:00","sub":"routes","caller":"routes/handlercore.go:675","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:15:47+08:00","sub":"routes","caller":"routes/handlercore.go:677","msg":"get registry instance"}
-{"level":"INFO","time":"2024-10-09T16:15:47+08:00","sub":"routes","caller":"routes/handlercore.go:685","msg":"call list node"}
-[GIN] 2024/10/09 - 16:15:47 | 200 |    50.46775ms |             ::1 | GET      "/nodes"
-{"level":"INFO","time":"2024-10-09T16:16:06+08:00","sub":"routes","caller":"routes/handlercore.go:727","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:16:06+08:00","sub":"routes","caller":"routes/handlercore.go:729","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:16:06+08:00","sub":"routes","caller":"routes/handlercore.go:731","msg":"get registry instance"}
-{"level":"INFO","time":"2024-10-09T16:16:06+08:00","sub":"routes","caller":"routes/handlercore.go:739","msg":"getting cp number"}
-[GIN] 2024/10/09 - 16:16:06 | 200 |   13.350625ms |             ::1 | GET      "/cps"
-{"level":"INFO","time":"2024-10-09T16:16:10+08:00","sub":"routes","caller":"routes/handlercore.go:756","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:16:10+08:00","sub":"routes","caller":"routes/handlercore.go:758","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:16:10+08:00","sub":"routes","caller":"routes/handlercore.go:760","msg":"get registry instance"}
-{"level":"INFO","time":"2024-10-09T16:16:10+08:00","sub":"routes","caller":"routes/handlercore.go:768","msg":"getting node all"}
-[GIN] 2024/10/09 - 16:16:10 | 200 |   13.201834ms |             ::1 | GET      "/node-all"
-{"level":"INFO","time":"2024-10-09T16:16:13+08:00","sub":"routes","caller":"routes/handlercore.go:785","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:16:13+08:00","sub":"routes","caller":"routes/handlercore.go:787","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:16:13+08:00","sub":"routes","caller":"routes/handlercore.go:789","msg":"get registry instance"}
-{"level":"INFO","time":"2024-10-09T16:16:13+08:00","sub":"routes","caller":"routes/handlercore.go:797","msg":"getting node Used"}
-[GIN] 2024/10/09 - 16:16:13 | 200 |   13.447834ms |             ::1 | GET      "/node-used"
-{"level":"INFO","time":"2024-10-09T16:16:16+08:00","sub":"routes","caller":"routes/handlercore.go:814","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:16:16+08:00","sub":"routes","caller":"routes/handlercore.go:816","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:16:16+08:00","sub":"routes","caller":"routes/handlercore.go:818","msg":"get registry instance"}
-{"level":"INFO","time":"2024-10-09T16:16:16+08:00","sub":"routes","caller":"routes/handlercore.go:826","msg":"getting mem all"}
-[GIN] 2024/10/09 - 16:16:16 | 200 |   14.128708ms |             ::1 | GET      "/mem-all"
-{"level":"INFO","time":"2024-10-09T16:16:19+08:00","sub":"routes","caller":"routes/handlercore.go:843","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:16:19+08:00","sub":"routes","caller":"routes/handlercore.go:845","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:16:19+08:00","sub":"routes","caller":"routes/handlercore.go:847","msg":"get registry instance"}
-{"level":"INFO","time":"2024-10-09T16:16:19+08:00","sub":"routes","caller":"routes/handlercore.go:855","msg":"getting mem Used"}
-[GIN] 2024/10/09 - 16:16:19 | 200 |   15.401875ms |             ::1 | GET      "/mem-used"
-{"level":"INFO","time":"2024-10-09T16:16:22+08:00","sub":"routes","caller":"routes/handlercore.go:872","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:16:22+08:00","sub":"routes","caller":"routes/handlercore.go:874","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:16:22+08:00","sub":"routes","caller":"routes/handlercore.go:876","msg":"get registry instance"}
-{"level":"INFO","time":"2024-10-09T16:16:22+08:00","sub":"routes","caller":"routes/handlercore.go:884","msg":"getting disk all"}
-[GIN] 2024/10/09 - 16:16:22 | 200 |   16.357542ms |             ::1 | GET      "/disk-all"
-{"level":"INFO","time":"2024-10-09T16:16:25+08:00","sub":"routes","caller":"routes/handlercore.go:901","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:16:25+08:00","sub":"routes","caller":"routes/handlercore.go:903","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:16:25+08:00","sub":"routes","caller":"routes/handlercore.go:905","msg":"get registry instance"}
-{"level":"INFO","time":"2024-10-09T16:16:25+08:00","sub":"routes","caller":"routes/handlercore.go:913","msg":"getting disk Used"}
-[GIN] 2024/10/09 - 16:16:25 | 200 |    9.912416ms |             ::1 | GET      "/disk-used"
-{"level":"INFO","time":"2024-10-09T16:34:12+08:00","sub":"routes","caller":"routes/handlercore.go:507","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:34:12+08:00","sub":"routes","caller":"routes/handlercore.go:509","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:34:12+08:00","sub":"routes","caller":"routes/handlercore.go:527","msg":"order info:{ 1 0 0 1728461653 1728462839 5 10 4}"}
-[GIN] 2024/10/09 - 16:34:12 | 200 |   37.565542ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-10-09T16:34:23+08:00","sub":"routes","caller":"routes/handlercore.go:507","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:34:23+08:00","sub":"routes","caller":"routes/handlercore.go:509","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:34:23+08:00","sub":"routes","caller":"routes/handlercore.go:527","msg":"order info:{ 1 4000 0 1728462856 1728462856 5 1000 2}"}
-[GIN] 2024/10/09 - 16:34:23 | 200 |   24.964083ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-10-09T16:34:38+08:00","sub":"routes","caller":"routes/handlercore.go:507","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:34:38+08:00","sub":"routes","caller":"routes/handlercore.go:509","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:34:38+08:00","sub":"routes","caller":"routes/handlercore.go:527","msg":"order info:{ 1 11964 36 1728462856 1728462870 5 3000 2}"}
-[GIN] 2024/10/09 - 16:34:38 | 200 |    29.63675ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-10-09T16:34:54+08:00","sub":"routes","caller":"routes/handlercore.go:507","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:34:54+08:00","sub":"routes","caller":"routes/handlercore.go:509","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:34:54+08:00","sub":"routes","caller":"routes/handlercore.go:527","msg":"order info:{ 1 11900 100 1728462856 1728462886 5 3000 2}"}
-[GIN] 2024/10/09 - 16:34:54 | 200 |   28.622542ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-10-09T16:35:05+08:00","sub":"routes","caller":"routes/handlercore.go:507","msg":"connecting chain"}
-{"level":"INFO","time":"2024-10-09T16:35:05+08:00","sub":"routes","caller":"routes/handlercore.go:509","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-10-09T16:35:05+08:00","sub":"routes","caller":"routes/handlercore.go:527","msg":"order info:{ 1 11844 156 1728462856 1728462900 5 3000 2}"}
-[GIN] 2024/10/09 - 16:35:05 | 200 |      33.592ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
+contract addresses: {v0.3.1 0x6E13A05b95AB25B2D926FF4C78a4a5dBFaAA768F 0x90dbD53f8472f341dc8218DFb22701dfe9fC50A7  0x18025CD05FACf85b71F6F0bCae3dc50E2c7ed418 0xad2505000E16d53b954695ebea485B0151fD94ad 0x6646488F0b0f5028778E0CE3AF4d479c574c05E7  0x0ba92a9608A2A7e9804f0CFeCbA6B67b5eaC1bE2  }
+{"level":"INFO","time":"2024-10-11T17:57:03+08:00","sub":"server","caller":"server/server.go:29","msg":"Server Start"}
+badger 2024/10/11 17:57:03 INFO: All 0 tables opened in 0s
+badger 2024/10/11 17:57:03 INFO: Replaying file id: 0 at offset: 0
+badger 2024/10/11 17:57:03 INFO: Replay took: 2.291µs
+{"level":"INFO","time":"2024-10-11T17:57:38+08:00","sub":"routes","caller":"routes/handlercore.go:643","msg":"connecting chain"}
+{"level":"INFO","time":"2024-10-11T17:57:38+08:00","sub":"routes","caller":"routes/handlercore.go:645","msg":"chain id:1337"}
+[GIN] 2024/10/11 - 17:57:38 | 200 |   35.371583ms |             ::1 | GET      "/getlist?start=0&num=1"
+{"level":"INFO","time":"2024-10-11T18:01:43+08:00","sub":"routes","caller":"routes/handlercore.go:643","msg":"connecting chain"}
+{"level":"INFO","time":"2024-10-11T18:01:43+08:00","sub":"routes","caller":"routes/handlercore.go:645","msg":"chain id:1337"}
+[GIN] 2024/10/11 - 18:01:43 | 200 |   32.806792ms |             ::1 | GET      "/getlist?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+{"level":"INFO","time":"2024-10-11T18:01:55+08:00","sub":"routes","caller":"routes/handlercore.go:230","msg":"test"}
+{"level":"INFO","time":"2024-10-11T18:01:55+08:00","sub":"routes","caller":"routes/handlercore.go:231","msg":"start: 0, num: 2\n"}
+{"level":"INFO","time":"2024-10-11T18:01:55+08:00","sub":"routes","caller":"routes/handlercore.go:234","msg":"connecting chain"}
+{"level":"INFO","time":"2024-10-11T18:01:55+08:00","sub":"routes","caller":"routes/handlercore.go:236","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-10-11T18:01:55+08:00","sub":"routes","caller":"routes/handlercore.go:238","msg":"registry address: 0x0ba92a9608A2A7e9804f0CFeCbA6B67b5eaC1bE2"}
+[GIN] 2024/10/11 - 18:01:55 | 200 |   39.133333ms |             ::1 | GET      "/listcp?start=0&num=2"
+{"level":"INFO","time":"2024-10-11T18:02:57+08:00","sub":"routes","caller":"routes/handlercore.go:230","msg":"test"}
+{"level":"INFO","time":"2024-10-11T18:02:57+08:00","sub":"routes","caller":"routes/handlercore.go:231","msg":"start: 0, num: 1\n"}
+{"level":"INFO","time":"2024-10-11T18:02:57+08:00","sub":"routes","caller":"routes/handlercore.go:234","msg":"connecting chain"}
+{"level":"INFO","time":"2024-10-11T18:02:57+08:00","sub":"routes","caller":"routes/handlercore.go:236","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-10-11T18:02:57+08:00","sub":"routes","caller":"routes/handlercore.go:238","msg":"registry address: 0x0ba92a9608A2A7e9804f0CFeCbA6B67b5eaC1bE2"}
+[GIN] 2024/10/11 - 18:02:57 | 200 |   51.516167ms |             ::1 | GET      "/listcp?start=0&num=1"
+{"level":"INFO","time":"2024-10-11T18:03:00+08:00","sub":"routes","caller":"routes/handlercore.go:230","msg":"test"}
+{"level":"INFO","time":"2024-10-11T18:03:00+08:00","sub":"routes","caller":"routes/handlercore.go:231","msg":"start: 0, num: 0\n"}
+{"level":"INFO","time":"2024-10-11T18:03:00+08:00","sub":"routes","caller":"routes/handlercore.go:234","msg":"connecting chain"}
+{"level":"INFO","time":"2024-10-11T18:03:00+08:00","sub":"routes","caller":"routes/handlercore.go:236","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-10-11T18:03:00+08:00","sub":"routes","caller":"routes/handlercore.go:238","msg":"registry address: 0x0ba92a9608A2A7e9804f0CFeCbA6B67b5eaC1bE2"}
+[GIN] 2024/10/11 - 18:03:00 | 500 |   11.917584ms |             ::1 | GET      "/listcp?start=0&num=0"
+{"level":"INFO","time":"2024-10-11T18:03:06+08:00","sub":"routes","caller":"routes/handlercore.go:230","msg":"test"}
+{"level":"INFO","time":"2024-10-11T18:03:06+08:00","sub":"routes","caller":"routes/handlercore.go:231","msg":"start: 0, num: 1\n"}
+{"level":"INFO","time":"2024-10-11T18:03:06+08:00","sub":"routes","caller":"routes/handlercore.go:234","msg":"connecting chain"}
+{"level":"INFO","time":"2024-10-11T18:03:06+08:00","sub":"routes","caller":"routes/handlercore.go:236","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-10-11T18:03:06+08:00","sub":"routes","caller":"routes/handlercore.go:238","msg":"registry address: 0x0ba92a9608A2A7e9804f0CFeCbA6B67b5eaC1bE2"}
+[GIN] 2024/10/11 - 18:03:06 | 200 |   37.938583ms |             ::1 | GET      "/listcp?start=0&num=1"

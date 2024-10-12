@@ -38,104 +38,131 @@ const docTemplate = `{
                 }
             }
         },
-        "/createorder": {
-            "post": {
-                "description": "create an order",
+        "/allowance/": {
+            "get": {
+                "description": "check the allowance between an owner and a spender",
                 "consumes": [
-                    "multipart/form-data"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "CreateOrder"
+                    "Allowance"
                 ],
-                "summary": "Create order",
+                "summary": "Check Allowance",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "user address",
-                        "name": "userAddress",
-                        "in": "formData",
+                        "description": "owner",
+                        "name": "owner",
+                        "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "cpAddress",
-                        "name": "cpAddress",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "num cpu",
-                        "name": "numCPU",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "price cpu",
-                        "name": "priCPU",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "num",
-                        "name": "numGPU",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "price",
-                        "name": "priGPU",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "num",
-                        "name": "numStore",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "price",
-                        "name": "priStore",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "num",
-                        "name": "numMem",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "price",
-                        "name": "priMem",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "duration",
-                        "name": "duration",
-                        "in": "formData",
+                        "description": "spender",
+                        "name": "spender",
+                        "in": "query",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "regist OK",
+                        "description": "OK",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "404": {
+                        "description": "page not found",
                         "schema": {
                             "type": "string"
                         }
+                    }
+                }
+            }
+        },
+        "/cps/": {
+            "get": {
+                "description": "get cp number",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Get CP Number"
+                ],
+                "summary": "Get CP number",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "integer"
+                        }
                     },
-                    "400": {
-                        "description": "bad request",
+                    "404": {
+                        "description": "page not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/disk-all/": {
+            "get": {
+                "description": "total store space",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Total Store"
+                ],
+                "summary": "Total Store",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "404": {
+                        "description": "page not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/disk-used/": {
+            "get": {
+                "description": "used store space",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Used Store"
+                ],
+                "summary": "Used Store",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "404": {
+                        "description": "page not found",
                         "schema": {
                             "type": "string"
                         }
@@ -153,7 +180,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get cp"
+                    "Get Provider Info"
                 ],
                 "summary": "get a provider",
                 "parameters": [
@@ -187,6 +214,89 @@ const docTemplate = `{
                 }
             }
         },
+        "/getorder/": {
+            "get": {
+                "description": "get an order info",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Get Order"
+                ],
+                "summary": "Get Order",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user",
+                        "name": "user",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "cp",
+                        "name": "cp",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "404": {
+                        "description": "page not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/getorders/": {
+            "get": {
+                "description": "get all orders of an user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Get Orders"
+                ],
+                "summary": "Get Orders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user",
+                        "name": "user",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "404": {
+                        "description": "page not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/listcp/": {
             "get": {
                 "description": "list all providers",
@@ -200,6 +310,22 @@ const docTemplate = `{
                     "Listcps"
                 ],
                 "summary": "List all providers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "start",
+                        "name": "start",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "number",
+                        "name": "num",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -219,9 +345,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/listorder": {
+        "/mem-all/": {
             "get": {
-                "description": "list an order",
+                "description": "total memory space",
                 "consumes": [
                     "application/json"
                 ],
@@ -229,34 +355,18 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ListOrder"
+                    "Total Memory"
                 ],
-                "summary": "List order",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "user or provider",
-                        "name": "role",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "address",
-                        "name": "address",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
+                "summary": "Total Memory",
                 "responses": {
                     "200": {
-                        "description": "list OK",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     },
-                    "400": {
-                        "description": "bad request",
+                    "404": {
+                        "description": "page not found",
                         "schema": {
                             "type": "string"
                         }
@@ -264,9 +374,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/listpay": {
+        "/mem-used/": {
             "get": {
-                "description": "ListPay",
+                "description": "used memory space",
                 "consumes": [
                     "application/json"
                 ],
@@ -274,27 +384,18 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ListPay"
+                    "Used Memory"
                 ],
-                "summary": "ListPay",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "address of an user",
-                        "name": "addr",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
+                "summary": "Used Memory",
                 "responses": {
                     "200": {
-                        "description": "list pay OK",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     },
-                    "400": {
-                        "description": "bad request",
+                    "404": {
+                        "description": "page not found",
                         "schema": {
                             "type": "string"
                         }
@@ -302,9 +403,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/listtransfer": {
+        "/node-all/": {
             "get": {
-                "description": "List all transfers of an address",
+                "description": "all node number",
                 "consumes": [
                     "application/json"
                 ],
@@ -312,27 +413,18 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "List transfers"
+                    "Node All"
                 ],
-                "summary": "List all transfers",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "address to show list",
-                        "name": "address",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
+                "summary": "All Node Number",
                 "responses": {
                     "200": {
-                        "description": "list transfer OK",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     },
-                    "400": {
-                        "description": "bad request",
+                    "404": {
+                        "description": "page not found",
                         "schema": {
                             "type": "string"
                         }
@@ -340,37 +432,111 @@ const docTemplate = `{
                 }
             }
         },
-        "/pay": {
-            "post": {
-                "description": "Pay to credit with a transfer's key",
+        "/node-used/": {
+            "get": {
+                "description": "used node number",
                 "consumes": [
-                    "multipart/form-data"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Pay"
+                    "Node Used"
                 ],
-                "summary": "Pay for credit",
+                "summary": "Used Node Number",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "404": {
+                        "description": "page not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/node/": {
+            "get": {
+                "description": "Get a node of a cp with node id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Get Node"
+                ],
+                "summary": "Node",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "transfer key",
-                        "name": "transkey",
-                        "in": "formData",
+                        "description": "cp address",
+                        "name": "cp",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "node id",
+                        "name": "id",
+                        "in": "query",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "pay OK",
+                        "description": "OK",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "404": {
+                        "description": "page not found",
                         "schema": {
                             "type": "string"
                         }
+                    }
+                }
+            }
+        },
+        "/nodes/": {
+            "get": {
+                "description": "Get all nodes of this provider",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Get Nodes"
+                ],
+                "summary": "Nodes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "cp address",
+                        "name": "cp",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "integer"
+                        }
                     },
-                    "400": {
-                        "description": "bad request",
+                    "404": {
+                        "description": "page not found",
                         "schema": {
                             "type": "string"
                         }
@@ -392,13 +558,6 @@ const docTemplate = `{
                 ],
                 "summary": "QueryCredit",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "role of this caller",
-                        "name": "role",
-                        "in": "query",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "address of this caller",
@@ -423,47 +582,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/refreshtransfer": {
-            "post": {
-                "description": "Refresh status of transfer of an address",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Refresh Transfer"
-                ],
-                "summary": "RefreshTransfer status of transfer",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "address to refresh",
-                        "name": "address",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "refresh OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "bad request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/registcp": {
-            "post": {
-                "description": "Regist CP",
+        "/version": {
+            "get": {
+                "description": "get version",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -471,147 +592,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "RegistCP"
+                    "Version"
                 ],
-                "summary": "Regist CP",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "name",
-                        "name": "name",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "address",
-                        "name": "address",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "endpoint",
-                        "name": "endpoint",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "num cpu",
-                        "name": "numCPU",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "price cpu",
-                        "name": "priCPU",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "num",
-                        "name": "numGPU",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "price",
-                        "name": "priGPU",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "num",
-                        "name": "numStore",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "price",
-                        "name": "priStore",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "num",
-                        "name": "numMem",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "price",
-                        "name": "priMem",
-                        "in": "formData"
-                    }
-                ],
+                "summary": "version",
                 "responses": {
                     "200": {
-                        "description": "regist OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "bad request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/transfer": {
-            "post": {
-                "description": "user transfer token to platform",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Transfer"
-                ],
-                "summary": "Transfer token",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "tx hash",
-                        "name": "txHash",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "from addr",
-                        "name": "from",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "to addr",
-                        "name": "to",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "transfer value",
-                        "name": "value",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "transfer OK",
+                        "description": "version OK",
                         "schema": {
                             "type": "string"
                         }
@@ -672,7 +658,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8081",
+	Host:             "localhost:8002",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "PLATFORM API",

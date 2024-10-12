@@ -11,11 +11,11 @@ import (
 //	@title			PLATFORM API
 //	@version		1.0
 //	@description	This is the grid platform
-////	@host			183.240.197.189:28081
-// 	@host			localhost:8081
-//	@BasePath		/
 //
-
+// //	@host			183.240.197.189:28081
+//
+//	@host			localhost:8002
+//	@BasePath		/
 func main() {
 	local := make([]*cli.Command, 0, 1)
 	local = append(local, cmd.DaemonCmd)
@@ -45,4 +45,5 @@ func main() {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n\n", err) // nolint:errcheck
 		os.Exit(1)
 	}
+
 }

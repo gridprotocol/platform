@@ -26,7 +26,7 @@ definitions:
       priStore:
         type: string
     type: object
-host: localhost:8002
+host: http://localhost:8002
 info:
   contact: {}
   description: This is the grid platform

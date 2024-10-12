@@ -12,9 +12,10 @@ import (
 //	@version		1.0
 //	@description	This is the grid platform
 //
-// //	@host			183.240.197.189:28081
+//	@host			183.240.197.189:54502
 //
-//	@host			localhost:8002
+// //	@host			localhost:8002
+//
 //	@BasePath		/
 func main() {
 	local := make([]*cli.Command, 0, 1)

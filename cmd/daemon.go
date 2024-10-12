@@ -60,14 +60,18 @@ var runCmd = &cli.Command{
 		case "local":
 			chain_ep = eth.Ganache
 			common.Contracts = common.LocalContracts.Contracts
-
 		case "sepo":
 			chain_ep = eth.Sepolia
 			common.Contracts = common.SepoContracts.Contracts
+		case "dev":
+			chain_ep = eth.DevChain
+			common.Contracts = common.DevContracts.Contracts
 		}
+
 		fmt.Printf("chain selected:%s, chain endpoint:%s\n", chain, chain_ep)
 		fmt.Println("contract addresses:", common.Contracts)
 
+		// listen endpoint and chain endpoint
 		opts := server.ServerOption{
 			Endpoint:       ep,
 			Chain_Endpoint: chain_ep,

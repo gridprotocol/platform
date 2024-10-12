@@ -53,6 +53,9 @@ var TopupCmd = &cli.Command{
 		case "sepo":
 			ep = eth.Sepolia
 			comm.Contracts = comm.SepoContracts.Contracts
+		case "dev":
+			ep = eth.DevChain
+			comm.Contracts = comm.DevContracts.Contracts
 		}
 
 		// get credit contract address

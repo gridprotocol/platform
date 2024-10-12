@@ -6,7 +6,7 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "http://localhost:8002",
+    "host": "183.240.197.189:54502",
     "basePath": "/",
     "paths": {
         "/": {

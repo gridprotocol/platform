@@ -1,13 +1,12 @@
 endpoint: 0.0.0.0:8002
-chain selected:dev, chain endpoint:https://devchain.metamemo.one:8501
-contract addresses: {v0.3.1 0xB16538D06597F6AD0ef35d4bCcE7BF78dfC6c56F 0x3a0bD3EF702e858e8eC10E921B15D47AaCE36C29  0xC5e48f65f186C058Adda6687dDfd31A06e57ab7C 0x7F8b2194b37e74F354FC3bfc92736C793c2855Fd 0xa3f465327cb110cc3e8010BAb547B82dd216376B  0xc69bB8F8e97111933231494BF42feb77c733A2d7  }
-{"level":"INFO","time":"2024-10-12T16:39:01+08:00","sub":"server","caller":"server/server.go:29","msg":"Server Start"}
-badger 2024/10/12 16:39:01 INFO: All 0 tables opened in 0s
-badger 2024/10/12 16:39:01 INFO: Replaying file id: 0 at offset: 0
-badger 2024/10/12 16:39:01 INFO: Replay took: 2.625µs
-[GIN] 2024/10/12 - 16:39:11 | 200 |    1.025458ms |             ::1 | GET      "/swagger/index.html"
-[GIN] 2024/10/12 - 16:39:11 | 200 |     397.375µs |             ::1 | GET      "/swagger/swagger-ui.css"
-[GIN] 2024/10/12 - 16:39:11 | 200 |     535.584µs |             ::1 | GET      "/swagger/swagger-ui-standalone-preset.js"
-[GIN] 2024/10/12 - 16:39:11 | 200 |    1.561333ms |             ::1 | GET      "/swagger/swagger-ui-bundle.js"
-[GIN] 2024/10/12 - 16:39:11 | 200 |      71.916µs |             ::1 | GET      "/swagger/favicon-32x32.png"
-[GIN] 2024/10/12 - 16:39:11 | 200 |       278.5µs |             ::1 | GET      "/swagger/doc.json"
+chain selected:local, chain endpoint:HTTP://127.0.0.1:7545
+contract addresses: {v0.3.2 0x90160b434C2CF51C7FEe1B3E4c7458511a6c1d99 0x8C1C52783f560462d2fD9eb1e808f2a9D9bEcb0C  0x9275253620270c67f08AFEb57feB2f14C94887Ca 0x8D9c48552B6490D7082B8Bc5b656e5973694B9F6 0xF09b72c8A5a819c640D8224f2b5af3b7609FB79C  0x1Fef4832B5be8cc9547083f0d390e32fbC7d54a1  }
+{"level":"INFO","time":"2024-10-15T16:14:52+08:00","sub":"server","caller":"server/server.go:29","msg":"Server Start"}
+badger 2024/10/15 16:14:52 INFO: All 0 tables opened in 0s
+badger 2024/10/15 16:14:52 INFO: Replaying file id: 0 at offset: 0
+badger 2024/10/15 16:14:52 INFO: Replay took: 2.625µs
+{"level":"INFO","time":"2024-10-15T16:15:51+08:00","sub":"routes","caller":"routes/handlercore.go:799","msg":"connecting chain"}
+{"level":"INFO","time":"2024-10-15T16:15:51+08:00","sub":"routes","caller":"routes/handlercore.go:801","msg":"chain id:1337"}
+{"level":"INFO","time":"2024-10-15T16:15:51+08:00","sub":"routes","caller":"routes/handlercore.go:803","msg":"get registry instance"}
+{"level":"INFO","time":"2024-10-15T16:15:51+08:00","sub":"routes","caller":"routes/handlercore.go:811","msg":"getting cp number"}
+[GIN] 2024/10/15 - 16:15:51 | 200 |   28.088875ms |             ::1 | GET      "/ginfo"

@@ -783,18 +783,18 @@ func (hc *HandlerCore) GetOrdersHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, orders)
 }
 
-// get cp number
+// get global info
 // CpsHandler godoc
 //
-//	@Summary		Get CP number
-//	@Description	get cp number
-//	@Tags			Get CP Number
+//	@Summary		Get Global Info
+//	@Description	get global info
+//	@Tags			Get GInfo
 //	@Accept			json
 //	@Produce		json
 //	@Success		200	{object}	int
 //	@Failure		404	{object}	string	"page not found"
-//	@Router			/cps/ [get]
-func (hc *HandlerCore) CpsHandler(c *gin.Context) {
+//	@Router			/ginfo/ [get]
+func (hc *HandlerCore) GInfoHandler(c *gin.Context) {
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
 	backend, chainID := eth.ConnETH(Chain_Endpoint)
@@ -811,7 +811,7 @@ func (hc *HandlerCore) CpsHandler(c *gin.Context) {
 	logger.Info("getting cp number")
 
 	//
-	r, err := regIns.CpNumber(&bind.CallOpts{})
+	gInfo, err := regIns.GInfo(&bind.CallOpts{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("call contract failed: %s", err.Error())})
 		return
@@ -819,241 +819,7 @@ func (hc *HandlerCore) CpsHandler(c *gin.Context) {
 	//logger.Info("cp keys:", keys)
 
 	// response
-	c.JSON(http.StatusOK, r)
-}
-
-// get node all
-// NodeAllHandler godoc
-//
-//	@Summary		All Node Number
-//	@Description	all node number
-//	@Tags			Node All
-//	@Accept			json
-//	@Produce		json
-//	@Success		200	{object}	int
-//	@Failure		404	{object}	string	"page not found"
-//	@Router			/node-all/ [get]
-func (hc *HandlerCore) NodeAllHandler(c *gin.Context) {
-	// connect to an eth node with ep
-	logger.Info("connecting chain")
-	backend, chainID := eth.ConnETH(Chain_Endpoint)
-	logger.Info("chain id:", chainID)
-
-	logger.Info("get registry instance")
-	// get contract instance
-	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("new market instance failed: %s", err.Error())})
-		return
-	}
-
-	logger.Info("getting node all")
-
-	//
-	r, err := regIns.NodeTotal(&bind.CallOpts{})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("call contract failed: %s", err.Error())})
-		return
-	}
-	//logger.Info("cp keys:", keys)
-
-	// response
-	c.JSON(http.StatusOK, r)
-}
-
-// get node used
-// NodeUsedHandler godoc
-//
-//	@Summary		Used Node Number
-//	@Description	used node number
-//	@Tags			Node Used
-//	@Accept			json
-//	@Produce		json
-//	@Success		200	{object}	int
-//	@Failure		404	{object}	string	"page not found"
-//	@Router			/node-used/ [get]
-func (hc *HandlerCore) NodeUsedHandler(c *gin.Context) {
-	// connect to an eth node with ep
-	logger.Info("connecting chain")
-	backend, chainID := eth.ConnETH(Chain_Endpoint)
-	logger.Info("chain id:", chainID)
-
-	logger.Info("get registry instance")
-	// get contract instance
-	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("new market instance failed: %s", err.Error())})
-		return
-	}
-
-	logger.Info("getting node Used")
-
-	//
-	r, err := regIns.NodeUsed(&bind.CallOpts{})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("call contract failed: %s", err.Error())})
-		return
-	}
-	//logger.Info("cp keys:", keys)
-
-	// response
-	c.JSON(http.StatusOK, r)
-}
-
-// get mem all
-// MemAllHandler godoc
-//
-//	@Summary		Total Memory
-//	@Description	total memory space
-//	@Tags			Total Memory
-//	@Accept			json
-//	@Produce		json
-//	@Success		200	{object}	int
-//	@Failure		404	{object}	string	"page not found"
-//	@Router			/mem-all/ [get]
-func (hc *HandlerCore) MemAllHandler(c *gin.Context) {
-	// connect to an eth node with ep
-	logger.Info("connecting chain")
-	backend, chainID := eth.ConnETH(Chain_Endpoint)
-	logger.Info("chain id:", chainID)
-
-	logger.Info("get registry instance")
-	// get contract instance
-	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("new market instance failed: %s", err.Error())})
-		return
-	}
-
-	logger.Info("getting mem all")
-
-	//
-	r, err := regIns.MemTotal(&bind.CallOpts{})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("call contract failed: %s", err.Error())})
-		return
-	}
-	//logger.Info("cp keys:", keys)
-
-	// response
-	c.JSON(http.StatusOK, r)
-}
-
-// get mem used
-// MemUsedHandler godoc
-//
-//	@Summary		Used Memory
-//	@Description	used memory space
-//	@Tags			Used Memory
-//	@Accept			json
-//	@Produce		json
-//	@Success		200	{object}	int
-//	@Failure		404	{object}	string	"page not found"
-//	@Router			/mem-used/ [get]
-func (hc *HandlerCore) MemUsedHandler(c *gin.Context) {
-	// connect to an eth node with ep
-	logger.Info("connecting chain")
-	backend, chainID := eth.ConnETH(Chain_Endpoint)
-	logger.Info("chain id:", chainID)
-
-	logger.Info("get registry instance")
-	// get contract instance
-	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("new market instance failed: %s", err.Error())})
-		return
-	}
-
-	logger.Info("getting mem Used")
-
-	//
-	r, err := regIns.MemUsed(&bind.CallOpts{})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("call contract failed: %s", err.Error())})
-		return
-	}
-	//logger.Info("cp keys:", keys)
-
-	// response
-	c.JSON(http.StatusOK, r)
-}
-
-// get disk all
-// DiskAllHandler godoc
-//
-//	@Summary		Total Store
-//	@Description	total store space
-//	@Tags			Total Store
-//	@Accept			json
-//	@Produce		json
-//	@Success		200	{object}	int
-//	@Failure		404	{object}	string	"page not found"
-//	@Router			/disk-all/ [get]
-func (hc *HandlerCore) DiskAllHandler(c *gin.Context) {
-	// connect to an eth node with ep
-	logger.Info("connecting chain")
-	backend, chainID := eth.ConnETH(Chain_Endpoint)
-	logger.Info("chain id:", chainID)
-
-	logger.Info("get registry instance")
-	// get contract instance
-	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("new market instance failed: %s", err.Error())})
-		return
-	}
-
-	logger.Info("getting disk all")
-
-	//
-	r, err := regIns.DiskTotal(&bind.CallOpts{})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("call contract failed: %s", err.Error())})
-		return
-	}
-	//logger.Info("cp keys:", keys)
-
-	// response
-	c.JSON(http.StatusOK, r)
-}
-
-// get disk used
-// DiskUsedHandler godoc
-//
-//	@Summary		Used Store
-//	@Description	used store space
-//	@Tags			Used Store
-//	@Accept			json
-//	@Produce		json
-//	@Success		200	{object}	int
-//	@Failure		404	{object}	string	"page not found"
-//	@Router			/disk-used/ [get]
-func (hc *HandlerCore) DiskUsedHandler(c *gin.Context) {
-	// connect to an eth node with ep
-	logger.Info("connecting chain")
-	backend, chainID := eth.ConnETH(Chain_Endpoint)
-	logger.Info("chain id:", chainID)
-
-	logger.Info("get registry instance")
-	// get contract instance
-	regIns, err := registry.NewRegistry(common.HexToAddress(comm.Contracts.Registry), backend)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("new market instance failed: %s", err.Error())})
-		return
-	}
-
-	logger.Info("getting disk Used")
-
-	//
-	r, err := regIns.DiskUsed(&bind.CallOpts{})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("call contract failed: %s", err.Error())})
-		return
-	}
-	//logger.Info("cp keys:", keys)
-
-	// response
-	c.JSON(http.StatusOK, r)
+	c.JSON(http.StatusOK, gInfo)
 }
 
 // qeury credit for a role with address

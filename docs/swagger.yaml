@@ -26,7 +26,7 @@ definitions:
       priStore:
         type: string
     type: object
-host: 183.240.197.189:54502
+host: localhost:8002
 info:
   contact: {}
   description: This is the grid platform
@@ -78,63 +78,6 @@ paths:
       summary: Check Allowance
       tags:
       - Allowance
-  /cps/:
-    get:
-      consumes:
-      - application/json
-      description: get cp number
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: integer
-        "404":
-          description: page not found
-          schema:
-            type: string
-      summary: Get CP number
-      tags:
-      - Get CP Number
-  /disk-all/:
-    get:
-      consumes:
-      - application/json
-      description: total store space
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: integer
-        "404":
-          description: page not found
-          schema:
-            type: string
-      summary: Total Store
-      tags:
-      - Total Store
-  /disk-used/:
-    get:
-      consumes:
-      - application/json
-      description: used store space
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: integer
-        "404":
-          description: page not found
-          schema:
-            type: string
-      summary: Used Store
-      tags:
-      - Used Store
   /getcp/:
     get:
       consumes:
@@ -219,6 +162,25 @@ paths:
       summary: Get Orders
       tags:
       - Get Orders
+  /ginfo/:
+    get:
+      consumes:
+      - application/json
+      description: get global info
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "404":
+          description: page not found
+          schema:
+            type: string
+      summary: Get Global Info
+      tags:
+      - Get GInfo
   /listcp/:
     get:
       consumes:
@@ -251,82 +213,6 @@ paths:
       summary: List all providers
       tags:
       - Listcps
-  /mem-all/:
-    get:
-      consumes:
-      - application/json
-      description: total memory space
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: integer
-        "404":
-          description: page not found
-          schema:
-            type: string
-      summary: Total Memory
-      tags:
-      - Total Memory
-  /mem-used/:
-    get:
-      consumes:
-      - application/json
-      description: used memory space
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: integer
-        "404":
-          description: page not found
-          schema:
-            type: string
-      summary: Used Memory
-      tags:
-      - Used Memory
-  /node-all/:
-    get:
-      consumes:
-      - application/json
-      description: all node number
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: integer
-        "404":
-          description: page not found
-          schema:
-            type: string
-      summary: All Node Number
-      tags:
-      - Node All
-  /node-used/:
-    get:
-      consumes:
-      - application/json
-      description: used node number
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: integer
-        "404":
-          description: page not found
-          schema:
-            type: string
-      summary: Used Node Number
-      tags:
-      - Node Used
   /node/:
     get:
       consumes:

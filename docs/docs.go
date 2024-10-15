@@ -83,93 +83,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/cps/": {
-            "get": {
-                "description": "get cp number",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Get CP Number"
-                ],
-                "summary": "Get CP number",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    "404": {
-                        "description": "page not found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/disk-all/": {
-            "get": {
-                "description": "total store space",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Total Store"
-                ],
-                "summary": "Total Store",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    "404": {
-                        "description": "page not found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/disk-used/": {
-            "get": {
-                "description": "used store space",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Used Store"
-                ],
-                "summary": "Used Store",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    "404": {
-                        "description": "page not found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/getcp/": {
             "get": {
                 "description": "get a provider's info",
@@ -297,6 +210,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/ginfo/": {
+            "get": {
+                "description": "get global info",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Get GInfo"
+                ],
+                "summary": "Get Global Info",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "404": {
+                        "description": "page not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/listcp/": {
             "get": {
                 "description": "list all providers",
@@ -334,122 +276,6 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/routes.CPInfo"
                             }
-                        }
-                    },
-                    "404": {
-                        "description": "page not found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/mem-all/": {
-            "get": {
-                "description": "total memory space",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Total Memory"
-                ],
-                "summary": "Total Memory",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    "404": {
-                        "description": "page not found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/mem-used/": {
-            "get": {
-                "description": "used memory space",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Used Memory"
-                ],
-                "summary": "Used Memory",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    "404": {
-                        "description": "page not found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/node-all/": {
-            "get": {
-                "description": "all node number",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Node All"
-                ],
-                "summary": "All Node Number",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    "404": {
-                        "description": "page not found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/node-used/": {
-            "get": {
-                "description": "used node number",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Node Used"
-                ],
-                "summary": "Used Node Number",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "integer"
                         }
                     },
                     "404": {
@@ -658,7 +484,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "183.240.197.189:54502",
+	Host:             "localhost:8002",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "PLATFORM API",

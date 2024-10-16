@@ -287,6 +287,44 @@ const docTemplate = `{
                 }
             }
         },
+        "/listorder": {
+            "get": {
+                "description": "get the provider list of an user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GetProList"
+                ],
+                "summary": "Get Pro List",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user address",
+                        "name": "user",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "list OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/node/": {
             "get": {
                 "description": "Get a node of a cp with node id",

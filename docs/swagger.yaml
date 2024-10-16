@@ -213,6 +213,31 @@ paths:
       summary: List all providers
       tags:
       - Listcps
+  /listorder:
+    get:
+      consumes:
+      - application/json
+      description: get the provider list of an user
+      parameters:
+      - description: user address
+        in: query
+        name: user
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: list OK
+          schema:
+            type: string
+        "400":
+          description: bad request
+          schema:
+            type: string
+      summary: Get Pro List
+      tags:
+      - GetProList
   /node/:
     get:
       consumes:

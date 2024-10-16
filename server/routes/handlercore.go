@@ -241,7 +241,7 @@ func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 	}
 
 	// get cp list
-	list, _, err := registryIns.GetList(&bind.CallOpts{}, s, n)
+	list, _, err := registryIns.ListCP(&bind.CallOpts{}, s, n)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("get cp keys failed: %s", err.Error()).Error()})
 		return
@@ -632,8 +632,18 @@ func (hc *HandlerCore) ValueOrderHandler(c *gin.Context) {
 // 	c.JSON(http.StatusOK, keys)
 // }
 
-// get the provider list for an user
-func (hc *HandlerCore) GetListHandler(c *gin.Context) {
+// handler for get provider list for an user
+//
+//	@Summary		Get Pro List
+//	@Description	get the provider list of an user
+//	@Tags			GetProList
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	query		string	true	"user address"
+//	@Success		200		{object}	string	"list OK"
+//	@Failure		400		{object}	string	"bad request"
+//	@Router			/listorder [get]
+func (hc *HandlerCore) GetCPSHandler(c *gin.Context) {
 	userAddr := c.Query("user")
 
 	// connect to an eth node with ep
@@ -781,6 +791,7 @@ func (hc *HandlerCore) GetOrdersHandler(c *gin.Context) {
 
 	// response order list
 	c.JSON(http.StatusOK, orders)
+
 }
 
 // get global info

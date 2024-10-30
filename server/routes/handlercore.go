@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"math/big"
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -19,6 +18,7 @@ import (
 	"github.com/grid/contracts/go/version"
 	comm "github.com/rockiecn/platform/common"
 	"github.com/rockiecn/platform/lib/kv"
+	"github.com/rockiecn/platform/lib/utils"
 )
 
 type HandlerCore struct {
@@ -224,8 +224,8 @@ func (hc *HandlerCore) ListCPHandler(c *gin.Context) {
 	start := c.Query("start")
 	num := c.Query("num")
 
-	s, _ := new(big.Int).SetString(start, 10)
-	n, _ := new(big.Int).SetString(num, 10)
+	s, _ := utils.StringToUint64(start)
+	n, _ := utils.StringToUint64(num)
 
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
@@ -702,10 +702,10 @@ func (hc *HandlerCore) GetNodeHandler(c *gin.Context) {
 	logger.Info("call list node")
 
 	// string to big
-	idBig, _ := new(big.Int).SetString(id, 10)
+	id64, _ := utils.StringToUint64(id)
 
 	// get node info
-	node, err := regIns.GetNode(&bind.CallOpts{}, common.HexToAddress(cp), idBig)
+	node, err := regIns.GetNode(&bind.CallOpts{}, common.HexToAddress(cp), id64)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("get node failed: %s", err.Error())})
 		return
@@ -721,7 +721,7 @@ func (hc *HandlerCore) GetNodeHandler(c *gin.Context) {
 //	@Summary		Nodes
 //	@Description	Get all nodes of this provider
 //	@Tags			Get Nodes
-//	@Accept			json
+//	@Accept			jsonb
 //	@Produce		json
 //	@Param			cp	query		string	true	"cp address"
 //	@Success		200	{object}	int

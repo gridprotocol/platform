@@ -523,12 +523,12 @@ func (hc *HandlerCore) UserCancelHandler(c *gin.Context) {
 //	@Router			/getorder/ [get]
 func (hc *HandlerCore) GetOrderHandler(c *gin.Context) {
 
-	// user and cp
-	userAddr := c.Query("user")
-	cpAddr := c.Query("cp")
+	// order id
+	id := c.Query("id")
 
-	logger.Debug("user:", userAddr)
-	logger.Debug("cp:", cpAddr)
+	logger.Debug("order id:", id)
+
+	id64, _ := utils.StringToUint64(id)
 
 	// connect to an eth node with ep
 	logger.Info("connecting chain")
@@ -546,7 +546,7 @@ func (hc *HandlerCore) GetOrderHandler(c *gin.Context) {
 	}
 
 	// get order with user and cp
-	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, common.HexToAddress(userAddr), common.HexToAddress(cpAddr))
+	orderInfo, err := marketIns.GetOrder(&bind.CallOpts{}, id64)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -784,7 +784,7 @@ func (hc *HandlerCore) GetOrdersHandler(c *gin.Context) {
 	}
 
 	// get orders of an user
-	orders, err := marketIns.GetOrders(&bind.CallOpts{}, common.HexToAddress(userAddr))
+	orders, err := marketIns.GetList(&bind.CallOpts{}, common.HexToAddress(userAddr))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("get orders failed: %s", err.Error())})
 	}

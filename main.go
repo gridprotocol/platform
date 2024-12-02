@@ -21,6 +21,7 @@ func main() {
 	local := make([]*cli.Command, 0, 1)
 	local = append(local, cmd.DaemonCmd)
 	local = append(local, cmd.TopupCmd)
+	local = append(local, cmd.Topup2Cmd)
 	local = append(local, cmd.VersionCmd)
 
 	app := cli.App{

@@ -870,6 +870,32 @@ func (hc *HandlerCore) QueryCreditHandler(c *gin.Context) {
 
 }
 
+func (hc *HandlerCore) QueryGtokenHandler(c *gin.Context) {
+	userAddr := c.Query("address")
+	gtokenAddr := comm.Contracts.Token
+
+	// connect to an eth node with ep
+	backend, chainID := eth.ConnETH(Chain_Endpoint)
+	fmt.Println("chain id:", chainID)
+
+	// get gtoken instance
+	gtokenIns, err := credit.NewCredit(common.HexToAddress(gtokenAddr), backend)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// query balance
+	bal, err := gtokenIns.BalanceOf(&bind.CallOpts{}, common.HexToAddress(userAddr))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"gtoken balance": bal})
+
+}
+
 // get current version of contracts
 
 // handler of version

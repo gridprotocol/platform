@@ -1,59 +1,36 @@
 endpoint: 0.0.0.0:8002
-chain selected:local, chain endpoint:HTTP://127.0.0.1:7545
-contract addresses: {v0.5.0 0xf4096746bBfd8D93e921Eb4Bb93b0745026c5087 0x6E41368D5404a6b25Bd407f1a171681fC4359542   0xD437d91b12740752ADf4a9E5fE0B7F9f9707E589 0xe7D94909D07501BeaF87f6d9063b76193817c94c 0x8E142765EF977eD2e6E5c0d94fd35B66E8c06fb4  0x0b2a667a928eD90416aaa75c7Aa7A4A63467aE82  }
-{"level":"INFO","time":"2024-11-05T17:41:08+08:00","sub":"server","caller":"server/server.go:29","msg":"Server Start"}
-badger 2024/11/05 17:41:08 INFO: All 0 tables opened in 0s
-badger 2024/11/05 17:41:09 INFO: Replaying file id: 0 at offset: 0
-badger 2024/11/05 17:41:09 INFO: Replay took: 1.75µs
-chain id: 1337
-[GIN] 2024/11/05 - 17:41:20 | 200 |   69.202708ms |             ::1 | GET      "/version"
-{"level":"INFO","time":"2024-11-05T17:41:31+08:00","sub":"routes","caller":"routes/handlercore.go:275","msg":"connecting chain"}
-{"level":"INFO","time":"2024-11-05T17:41:31+08:00","sub":"routes","caller":"routes/handlercore.go:277","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-11-05T17:41:31+08:00","sub":"routes","caller":"routes/handlercore.go:296","msg":"registry info:{0xEf95c72C836605203F7f66788E450Af2a4141957 cp1 123.123.123.0 testdomain 123 0 0 0 0 0 0 []}"}
-[GIN] 2024/11/05 - 17:41:31 | 200 |     50.9165ms |             ::1 | GET      "/getcp?address=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-11-05T17:41:37+08:00","sub":"routes","caller":"routes/handlercore.go:275","msg":"connecting chain"}
-{"level":"INFO","time":"2024-11-05T17:41:37+08:00","sub":"routes","caller":"routes/handlercore.go:277","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-11-05T17:41:37+08:00","sub":"routes","caller":"routes/handlercore.go:296","msg":"registry info:{0xEf95c72C836605203F7f66788E450Af2a4141957 cp1 123.123.123.0 testdomain 123 1 0 2592000 0 2592000 0 [{0 0xEf95c72C836605203F7f66788E450Af2a4141957 {25920000 10 i5} {259200000 100 RTX4080} {259200000 100 2592000} {25920000 10 2592000} true false true}]}"}
-[GIN] 2024/11/05 - 17:41:37 | 200 |   66.896125ms |             ::1 | GET      "/getcp?address=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-11-05T17:41:42+08:00","sub":"routes","caller":"routes/handlercore.go:275","msg":"connecting chain"}
-{"level":"INFO","time":"2024-11-05T17:41:43+08:00","sub":"routes","caller":"routes/handlercore.go:277","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-11-05T17:41:43+08:00","sub":"routes","caller":"routes/handlercore.go:296","msg":"registry info:{0xEf95c72C836605203F7f66788E450Af2a4141957 cp1 123.123.123.0 testdomain 123 2 0 2592001 0 2592001 0 [{0 0xEf95c72C836605203F7f66788E450Af2a4141957 {25920000 10 i5} {259200000 100 RTX4080} {259200000 100 2592000} {25920000 10 2592000} true false true} {1 0xEf95c72C836605203F7f66788E450Af2a4141957 {2592000 1 i7} {2592000 1 RTX4090} {2592000 1 1} {2592000 1 1} true false true}]}"}
-[GIN] 2024/11/05 - 17:41:43 | 200 |   50.038458ms |             ::1 | GET      "/getcp?address=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-11-05T17:42:11+08:00","sub":"routes","caller":"routes/handlercore.go:534","msg":"connecting chain"}
-{"level":"INFO","time":"2024-11-05T17:42:11+08:00","sub":"routes","caller":"routes/handlercore.go:536","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-11-05T17:42:11+08:00","sub":"routes","caller":"routes/handlercore.go:554","msg":"order info:{0 0x0000000000000000000000000000000000000000 0x0000000000000000000000000000000000000000 0  0 0 0 0 0 0 0}"}
-[GIN] 2024/11/05 - 17:42:11 | 200 |   41.009458ms |             ::1 | GET      "/getorder?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528&cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-11-05T17:42:23+08:00","sub":"routes","caller":"routes/handlercore.go:534","msg":"connecting chain"}
-{"level":"INFO","time":"2024-11-05T17:42:23+08:00","sub":"routes","caller":"routes/handlercore.go:536","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-11-05T17:42:23+08:00","sub":"routes","caller":"routes/handlercore.go:554","msg":"order info:{1 0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957 1  40 0 1730799720 1730799720 5 10 2}"}
-[GIN] 2024/11/05 - 17:42:23 | 200 |   45.090875ms |             ::1 | GET      "/getorder?id=1"
-{"level":"INFO","time":"2024-11-05T17:42:32+08:00","sub":"routes","caller":"routes/handlercore.go:776","msg":"connecting chain"}
-{"level":"INFO","time":"2024-11-05T17:42:32+08:00","sub":"routes","caller":"routes/handlercore.go:778","msg":"chain id:1337"}
-[GIN] 2024/11/05 - 17:42:32 | 200 |   43.627959ms |             ::1 | GET      "/getorders?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
-{"level":"INFO","time":"2024-11-06T17:23:11+08:00","sub":"routes","caller":"routes/handlercore.go:650","msg":"connecting chain"}
-{"level":"INFO","time":"2024-11-06T17:23:11+08:00","sub":"routes","caller":"routes/handlercore.go:652","msg":"chain id:1337"}
-[GIN] 2024/11/06 - 17:23:12 | 200 |  758.035542ms |             ::1 | GET      "/getcps?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
-{"level":"INFO","time":"2024-11-06T17:23:17+08:00","sub":"routes","caller":"routes/handlercore.go:690","msg":"connecting chain"}
-{"level":"INFO","time":"2024-11-06T17:23:17+08:00","sub":"routes","caller":"routes/handlercore.go:692","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-11-06T17:23:17+08:00","sub":"routes","caller":"routes/handlercore.go:694","msg":"get registry instance"}
-{"level":"INFO","time":"2024-11-06T17:23:17+08:00","sub":"routes","caller":"routes/handlercore.go:702","msg":"call list node"}
-[GIN] 2024/11/06 - 17:23:17 | 200 |  281.636917ms |             ::1 | GET      "/node?cp=0xEf95c72C836605203F7f66788E450Af2a4141957&id=1"
-{"level":"INFO","time":"2024-11-06T17:23:33+08:00","sub":"routes","caller":"routes/handlercore.go:734","msg":"connecting chain"}
-{"level":"INFO","time":"2024-11-06T17:23:33+08:00","sub":"routes","caller":"routes/handlercore.go:736","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-11-06T17:23:33+08:00","sub":"routes","caller":"routes/handlercore.go:738","msg":"get registry instance"}
-{"level":"INFO","time":"2024-11-06T17:23:33+08:00","sub":"routes","caller":"routes/handlercore.go:746","msg":"call list node"}
-[GIN] 2024/11/06 - 17:23:33 | 200 |  330.301292ms |             ::1 | GET      "/nodes?cp=0xEf95c72C836605203F7f66788E450Af2a4141957"
-{"level":"INFO","time":"2024-11-06T17:23:44+08:00","sub":"routes","caller":"routes/handlercore.go:534","msg":"connecting chain"}
-{"level":"INFO","time":"2024-11-06T17:23:45+08:00","sub":"routes","caller":"routes/handlercore.go:536","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-11-06T17:23:45+08:00","sub":"routes","caller":"routes/handlercore.go:554","msg":"order info:{1 0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957 1  40 0 1730799720 1730799720 5 10 2}"}
-[GIN] 2024/11/06 - 17:23:45 | 200 |   74.265625ms |             ::1 | GET      "/getorder?id=1"
-{"level":"INFO","time":"2024-11-06T17:24:03+08:00","sub":"routes","caller":"routes/handlercore.go:810","msg":"connecting chain"}
-{"level":"INFO","time":"2024-11-06T17:24:03+08:00","sub":"routes","caller":"routes/handlercore.go:812","msg":"chain id:1337"}
-{"level":"INFO","time":"2024-11-06T17:24:03+08:00","sub":"routes","caller":"routes/handlercore.go:814","msg":"get registry instance"}
-{"level":"INFO","time":"2024-11-06T17:24:03+08:00","sub":"routes","caller":"routes/handlercore.go:822","msg":"getting cp number"}
-[GIN] 2024/11/06 - 17:24:03 | 200 |   56.315208ms |             ::1 | GET      "/ginfo"
-{"level":"INFO","time":"2024-11-06T17:24:07+08:00","sub":"routes","caller":"routes/handlercore.go:650","msg":"connecting chain"}
-{"level":"INFO","time":"2024-11-06T17:24:07+08:00","sub":"routes","caller":"routes/handlercore.go:652","msg":"chain id:1337"}
-[GIN] 2024/11/06 - 17:24:08 | 200 |    39.20325ms |             ::1 | GET      "/getcps?user=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
-chain id: 1337
-[GIN] 2024/11/06 - 17:24:12 | 200 |   29.230167ms |             ::1 | GET      "/version"
+chain selected:dev, chain endpoint:https://devchain.metamemo.one:8501
+contract addresses: {v0.5.4 0x5cb4FC49dc04b38084f47f2deE5f2E7Ba7836345 0x3A4FBc41bdA3202666759dA687f0aBeb5B137F9C   0xd43241c35E49158B61aD5c061b2d050D276f9E94 0x832008a988c665820b4b167DF12dD9A73c3c5c7f 0xddEC62AE5BB4561ee5b9d99a1C098036871472Ef 0xD829CF6f672De56e24909D8b2eAfd1b9E50dfb50 0x10fd5Eb0A59398796aA6C368CF0562135C3e4c32 0xE3181641eB55E1b1788f44b9ff443012D5f9766e 0xa426415434eF7000Ba82b5d1FF55E8000C1fc706}
+{"level":"INFO","time":"2024-11-27T14:29:01+08:00","sub":"server","caller":"server/server.go:29","msg":"Server Start"}
+badger 2024/11/27 14:29:01 INFO: All 0 tables opened in 0s
+badger 2024/11/27 14:29:01 INFO: Replaying file id: 0 at offset: 0
+badger 2024/11/27 14:29:01 INFO: Replay took: 2.458µs
+chain id: 2985
+[GIN] 2024/11/27 - 14:31:22 | 200 |  339.979625ms |             ::1 | GET      "/version"
+{"level":"INFO","time":"2024-11-27T14:31:32+08:00","sub":"routes","caller":"routes/handlercore.go:534","msg":"connecting chain"}
+{"level":"INFO","time":"2024-11-27T14:31:32+08:00","sub":"routes","caller":"routes/handlercore.go:536","msg":"chain id:2985"}
+{"level":"INFO","time":"2024-11-27T14:31:32+08:00","sub":"routes","caller":"routes/handlercore.go:554","msg":"order info:{0 0x0000000000000000000000000000000000000000 0x0000000000000000000000000000000000000000 0  0 0 0 0 0 0 0}"}
+[GIN] 2024/11/27 - 14:31:32 | 200 |   90.548584ms |             ::1 | GET      "/getorder?id=1"
+{"level":"INFO","time":"2024-11-27T14:31:39+08:00","sub":"routes","caller":"routes/handlercore.go:231","msg":"connecting chain"}
+{"level":"INFO","time":"2024-11-27T14:31:39+08:00","sub":"routes","caller":"routes/handlercore.go:233","msg":"chain id:2985"}
+{"level":"INFO","time":"2024-11-27T14:31:39+08:00","sub":"routes","caller":"routes/handlercore.go:235","msg":"registry address: 0x10fd5Eb0A59398796aA6C368CF0562135C3e4c32"}
+[GIN] 2024/11/27 - 14:31:39 | 500 |  179.335666ms |             ::1 | GET      "/listcp?start=0&num=2"
+{"level":"INFO","time":"2024-11-27T14:31:51+08:00","sub":"routes","caller":"routes/handlercore.go:275","msg":"connecting chain"}
+{"level":"INFO","time":"2024-11-27T14:31:51+08:00","sub":"routes","caller":"routes/handlercore.go:277","msg":"chain id:2985"}
+{"level":"INFO","time":"2024-11-27T14:31:52+08:00","sub":"routes","caller":"routes/handlercore.go:296","msg":"registry info:{0x0000000000000000000000000000000000000000     0 0 0 0 0 0 []}"}
+[GIN] 2024/11/27 - 14:31:52 | 200 |    87.93125ms |             ::1 | GET      "/getcp?address=0xEf95c72C836605203F7f66788E450Af2a4141957"
+{"level":"INFO","time":"2024-11-27T14:32:19+08:00","sub":"routes","caller":"routes/handlercore.go:275","msg":"connecting chain"}
+{"level":"INFO","time":"2024-11-27T14:32:19+08:00","sub":"routes","caller":"routes/handlercore.go:277","msg":"chain id:2985"}
+{"level":"INFO","time":"2024-11-27T14:32:19+08:00","sub":"routes","caller":"routes/handlercore.go:296","msg":"registry info:{0xEf95c72C836605203F7f66788E450Af2a4141957 cp1 123.123.123.0 testdomain 123 1 0 2592000 0 2592000 0 [{0 0xEf95c72C836605203F7f66788E450Af2a4141957 {25920000 10 i5} {259200000 100 RTX4080} {259200000 100 2592000} {25920000 10 2592000} true false true}]}"}
+[GIN] 2024/11/27 - 14:32:19 | 200 |   86.462459ms |             ::1 | GET      "/getcp?address=0xEf95c72C836605203F7f66788E450Af2a4141957"
+{"level":"INFO","time":"2024-11-27T14:32:28+08:00","sub":"routes","caller":"routes/handlercore.go:275","msg":"connecting chain"}
+{"level":"INFO","time":"2024-11-27T14:32:28+08:00","sub":"routes","caller":"routes/handlercore.go:277","msg":"chain id:2985"}
+{"level":"INFO","time":"2024-11-27T14:32:28+08:00","sub":"routes","caller":"routes/handlercore.go:296","msg":"registry info:{0xEf95c72C836605203F7f66788E450Af2a4141957 cp1 123.123.123.0 testdomain 123 2 0 2592001 0 2592001 0 [{0 0xEf95c72C836605203F7f66788E450Af2a4141957 {25920000 10 i5} {259200000 100 RTX4080} {259200000 100 2592000} {25920000 10 2592000} true false true} {1 0xEf95c72C836605203F7f66788E450Af2a4141957 {2592000 1 i7} {2592000 1 RTX4090} {2592000 1 1} {2592000 1 1} true false true}]}"}
+[GIN] 2024/11/27 - 14:32:28 | 200 |   83.897708ms |             ::1 | GET      "/getcp?address=0xEf95c72C836605203F7f66788E450Af2a4141957"
+chain id: 2985
+[GIN] 2024/11/27 - 14:33:17 | 200 |  214.317458ms |             ::1 | GET      "/querycredit?address=0x82379862a857C98aB391Fa7F66957AfDE97EF528"
+[GIN] 2024/11/27 - 14:35:49 | 404 |       1.375µs |             ::1 | GET      "/v1/cp/list/0/1"
+{"level":"INFO","time":"2024-11-27T14:43:17+08:00","sub":"routes","caller":"routes/handlercore.go:534","msg":"connecting chain"}
+{"level":"INFO","time":"2024-11-27T14:43:17+08:00","sub":"routes","caller":"routes/handlercore.go:536","msg":"chain id:2985"}
+{"level":"INFO","time":"2024-11-27T14:43:17+08:00","sub":"routes","caller":"routes/handlercore.go:554","msg":"order info:{1 0x82379862a857C98aB391Fa7F66957AfDE97EF528 0xEf95c72C836605203F7f66788E450Af2a4141957 1  400000 0 1732689797 1732689797 5 100000 2}"}
+[GIN] 2024/11/27 - 14:43:17 | 200 |  213.530833ms |             ::1 | GET      "/getorder?id=1"

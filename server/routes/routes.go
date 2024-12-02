@@ -112,6 +112,9 @@ func (r Routes) registerAll(db *kv.Database) {
 	// query credit for an address
 	r.GET("/querycredit", hc.QueryCreditHandler)
 
+	// query gtoken for an address
+	r.GET("/querygtoken", hc.QueryGtokenHandler)
+
 	// approve credit
 	r.POST("/approve", hc.ApproveHandler)
 	// check allowance after approve

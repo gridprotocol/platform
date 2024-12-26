@@ -10,6 +10,7 @@ var (
 	LocalContracts contracts.Local
 	SepoContracts  contracts.Sepo
 	DevContracts   contracts.Dev
+	TestContracts  contracts.Test
 )
 
 // load all contract addresses from json
@@ -27,4 +28,8 @@ func init() {
 	// init contracts on dev chain
 	DevContracts = contracts.Dev{}
 	DevContracts.Load()
+
+	// init contracts on test chain
+	TestContracts = contracts.Test{}
+	TestContracts.Load()
 }

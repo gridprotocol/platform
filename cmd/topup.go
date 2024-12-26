@@ -29,7 +29,7 @@ var TopupCmd = &cli.Command{
 		&cli.StringFlag{
 			Name:    "chain",
 			Aliases: []string{"c"},
-			Usage:   "chain to interactivate: local, sepo",
+			Usage:   "chain to interactivate: local, sepo, dev, test",
 			Value:   "local",
 		},
 	},
@@ -56,6 +56,9 @@ var TopupCmd = &cli.Command{
 		case "dev":
 			ep = eth.DevChain
 			comm.Contracts = comm.DevContracts.Contracts
+		case "test":
+			ep = eth.TestChain
+			comm.Contracts = comm.TestContracts.Contracts
 		}
 
 		// get credit contract address

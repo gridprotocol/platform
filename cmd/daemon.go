@@ -38,7 +38,7 @@ var runCmd = &cli.Command{
 		&cli.StringFlag{
 			Name:    "chain",
 			Aliases: []string{"c"},
-			Usage:   "chain to interactivate, local: use local test chain, sepo: use sepo test chain",
+			Usage:   "chain to interactivate, local: use local test chain, sepo: use sepo test chain, test: testChain",
 			Value:   "local",
 		},
 	},
@@ -66,6 +66,9 @@ var runCmd = &cli.Command{
 		case "dev":
 			chain_ep = eth.DevChain
 			common.Contracts = common.DevContracts.Contracts
+		case "test":
+			chain_ep = eth.TestChain
+			common.Contracts = common.TestContracts.Contracts
 		}
 
 		fmt.Printf("chain selected:%s, chain endpoint:%s\n", chain, chain_ep)
